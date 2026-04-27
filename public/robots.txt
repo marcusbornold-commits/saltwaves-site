@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://saltwaves.studio/sitemap.xml
