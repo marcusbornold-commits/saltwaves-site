@@ -25,7 +25,25 @@ Useful scripts:
 ```bash
 npm run lint
 npm run build
+npm run tina:build:local
 ```
+
+## Tina CMS (Blog Editor)
+
+- The visual editor is available at `http://localhost:3000/admin` when running `npm run dev`.
+- Tina is configured for the existing MDX blog content in `content/blog/`.
+- Existing frontmatter fields are preserved: `title`, `description`, `date`.
+- Blog rendering in `app/blog/` continues to read directly from MDX files.
+
+### Vercel Setup For `/admin`
+
+Set these environment variables in Vercel so Tina can use the hosted API in production:
+
+- `NEXT_PUBLIC_TINA_CLIENT_ID`
+- `TINA_TOKEN`
+- `GITHUB_BRANCH` (or rely on `VERCEL_GIT_COMMIT_REF`)
+
+If credentials are not set, `npm run build` falls back to a local Tina build mode.
 
 ## Deploy to Vercel
 
