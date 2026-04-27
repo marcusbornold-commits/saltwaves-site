@@ -1,3 +1,4 @@
+import Link from "next/link";
 import SignupForm from "./components/signup-form";
 
 export default function Home() {
@@ -52,6 +53,17 @@ export default function Home() {
           </p>
           <p>PodMaster is built to solve it.</p>
           <p className="pt-4 text-[#ff6200]">— Marcus, Saltwaves Studio</p>
+        </div>
+      </section>
+
+      <section className="px-6 pb-20 sm:px-10 lg:px-20">
+        <div className="mx-auto max-w-5xl border-t border-white/10 pt-8">
+          <Link
+            href="/blog"
+            className="inline-block text-sm uppercase tracking-[0.14em] text-white/75 transition-opacity hover:opacity-70"
+          >
+            Visit the blog
+          </Link>
         </div>
       </section>
     </main>
