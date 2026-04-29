@@ -5,16 +5,40 @@ import { FormEvent, useState } from "react";
 export default function SignupForm() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = email.trim();
     if (!value) return;
 
-    // Placeholder MailerLite integration.
-    console.log("MailerLite signup placeholder", { email: value });
-    setSubmitted(true);
-    setEmail("");
+    setIsSubmitting(true);
+    setError(null);
+    setSubmitted(false);
+
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: value }),
+      });
+
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setError(data.error ?? "Could not subscribe right now.");
+        return;
+      }
+
+      setSubmitted(true);
+      setEmail("");
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -38,10 +62,16 @@ export default function SignupForm() {
       />
       <button
         type="submit"
+        disabled={isSubmitting}
         className="h-12 rounded-none border border-white bg-white px-6 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-transparent hover:text-white"
       >
-        Join
+        {isSubmitting ? "Joining..." : "Join"}
       </button>
+      {error ? (
+        <p className="text-xs uppercase tracking-[0.12em] text-[#ff8e57] sm:col-span-2">
+          {error}
+        </p>
+      ) : null}
       {submitted ? (
         <p className="text-xs uppercase tracking-[0.12em] text-white/60 sm:col-span-2">
           Thanks. You are on the list.
