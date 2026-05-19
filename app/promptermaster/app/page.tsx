@@ -211,6 +211,26 @@ function EditorView({ onStart, script, setScript }: EditorViewProps) {
       <button type="button" className="tm-cta" onClick={onStart} disabled={!script.trim()} style={{ justifySelf: "center", marginTop: "2px" }}>
         Start Prompter →
       </button>
+      <p
+        style={{
+          margin: "32px 0 0",
+          fontFamily: MONO,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          fontSize: "11px",
+          color: "rgba(255,255,255,0.4)",
+        }}
+      >
+        Built by Saltwaves Studio — AI audio mastering for podcasters.{" "}
+        <a
+          href="https://saltwaves.studio"
+          className="tm-inline-link"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Join the waitlist →
+        </a>
+      </p>
     </section>
   );
 }
@@ -222,6 +242,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
   const lastFrameRef = useRef<number | null>(null);
   const hideHudTimeoutRef = useRef<number | null>(null);
   const fullscreenHintTimeoutRef = useRef<number | null>(null);
+  const virtualScrollTopRef = useRef(0);
   const elapsedMsRef = useRef(0);
 
   const [isPlaying, setIsPlaying] = useState(true);
@@ -308,6 +329,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
   const syncProgress = useCallback(() => {
     const node = scrollRef.current;
     if (!node) return;
+    virtualScrollTopRef.current = node.scrollTop;
     const maxScroll = Math.max(1, node.scrollHeight - node.clientHeight);
     const ratio = Math.min(1, node.scrollTop / maxScroll);
     setProgress(ratio);
@@ -330,6 +352,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
     if (node) {
       node.scrollTop = 0;
     }
+    virtualScrollTopRef.current = 0;
     elapsedMsRef.current = 0;
     setElapsedTime("0:00");
     setProgress(0);
@@ -350,6 +373,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
     if (startScroll <= 1) {
       setElapsedTime("0:00");
       elapsedMsRef.current = 0;
+      virtualScrollTopRef.current = 0;
       setProgress(0);
       setShowEndOverlay(false);
       revealHud();
@@ -375,6 +399,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
       }
       const t = Math.min(1, elapsed / durationMs);
       node.scrollTop = startScroll * (1 - eased);
+      virtualScrollTopRef.current = node.scrollTop;
 
       const maxScroll = Math.max(1, node.scrollHeight - node.clientHeight);
       const ratio = Math.min(1, node.scrollTop / maxScroll);
@@ -386,6 +411,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
         topScrollAnimationRef.current = null;
         elapsedMsRef.current = 0;
         setElapsedTime("0:00");
+        virtualScrollTopRef.current = 0;
         setProgress(0);
         setShowEndOverlay(false);
         lastFrameRef.current = null;
@@ -535,16 +561,21 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
       lastFrameRef.current = timestamp;
 
       const pixelsPerSecond = (currentWpm / 60) * (currentFontSize * 3.2);
-      node.scrollTop += pixelsPerSecond * deltaSeconds;
+      const maxScroll = Math.max(1, node.scrollHeight - node.clientHeight);
+      const nextScrollTop = Math.min(
+        maxScroll,
+        virtualScrollTopRef.current + pixelsPerSecond * deltaSeconds
+      );
+      virtualScrollTopRef.current = nextScrollTop;
+      node.scrollTop = nextScrollTop;
 
       elapsedMsRef.current += deltaSeconds * 1000;
       setElapsedTime(formatTime(elapsedMsRef.current / 1000));
 
-      const maxScroll = Math.max(1, node.scrollHeight - node.clientHeight);
-      const ratio = Math.min(1, node.scrollTop / maxScroll);
+      const ratio = Math.min(1, nextScrollTop / maxScroll);
       setProgress(ratio);
 
-      if (node.scrollTop >= maxScroll - 1) {
+      if (nextScrollTop >= maxScroll - 1) {
         setShowEndOverlay(true);
         pause();
         revealHud();
@@ -966,6 +997,16 @@ export default function Page() {
 
         .tm-inline-slider input[type="range"] {
           width: 170px;
+        }
+
+        .tm-inline-link {
+          color: #ff6200;
+          text-decoration: none;
+          transition: opacity 180ms ease;
+        }
+
+        .tm-inline-link:hover {
+          opacity: 0.7;
         }
       `}</style>
 
