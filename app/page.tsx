@@ -57,12 +57,18 @@ export default function Home() {
       </section>
 
       <section className="px-6 pb-20 sm:px-10 lg:px-20">
-        <div className="mx-auto max-w-5xl border-t border-white/10 pt-8">
+        <div className="mx-auto flex max-w-5xl gap-8 border-t border-white/10 pt-8">
           <Link
             href="/blog"
             className="inline-block text-sm uppercase tracking-[0.14em] text-white/75 transition-opacity hover:opacity-70"
           >
             Visit the blog
+          </Link>
+          <Link
+            href="/promptermaster"
+            className="inline-block text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
+          >
+            Free Teleprompter →
           </Link>
         </div>
       </section>
