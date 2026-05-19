@@ -13,6 +13,12 @@ export default function Home() {
             Professional audio tools for creators
           </h1>
           <SignupForm />
+          <Link
+            href="/promptermaster"
+            className="inline-block mt-6 text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
+          >
+            Free Teleprompter →
+          </Link>
         </div>
       </section>
 
@@ -63,12 +69,6 @@ export default function Home() {
             className="inline-block text-sm uppercase tracking-[0.14em] text-white/75 transition-opacity hover:opacity-70"
           >
             Visit the blog
-          </Link>
-          <Link
-            href="/promptermaster"
-            className="inline-block text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
-          >
-            Free Teleprompter →
           </Link>
         </div>
       </section>
