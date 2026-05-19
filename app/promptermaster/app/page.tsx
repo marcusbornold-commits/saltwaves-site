@@ -221,7 +221,7 @@ function EditorView({ onStart, script, setScript }: EditorViewProps) {
           color: "rgba(255,255,255,0.4)",
         }}
       >
-        Built by Saltwaves Studio — AI audio mastering for podcasters.{" "}
+        BUILT BY SALTWAVES STUDIO — AI TOOLS FOR CREATORS.{" "}
         <a
           href="https://saltwaves.studio"
           className="tm-inline-link"
