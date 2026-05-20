@@ -615,7 +615,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
             textTransform: "none",
           }}
         >
-          <span>For fullscreen on iPad & iPhone: tap Share ↑ then &apos;Add to Home Screen&apos;</span>
+          <span>For fullscreen on iPhone & iPad: tap Share ↑ → Add to Home Screen</span>
           <button
             type="button"
             onClick={dismissIosFullscreenHint}
