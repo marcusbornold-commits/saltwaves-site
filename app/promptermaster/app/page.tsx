@@ -176,7 +176,7 @@ function EditorView({ onStart, script, setScript }: EditorViewProps) {
           placeholder="Paste your script here..."
           style={{
             width: "100%",
-            minHeight: "340px",
+            minHeight: "clamp(240px, 44svh, 340px)",
             resize: "vertical",
             border: "1px solid var(--text-primary)",
             background: "transparent",
@@ -887,7 +887,7 @@ export default function Page() {
         .tm-shell {
           width: min(1100px, 100%);
           margin: 0 auto;
-          padding: clamp(20px, 3vw, 38px);
+          padding: clamp(16px, 3vw, 38px);
           display: grid;
           gap: 22px;
         }
@@ -895,10 +895,11 @@ export default function Page() {
         .tm-title {
           margin: 0;
           font-family: var(--font-archivo);
-          font-size: clamp(46px, 9vw, 130px);
+          font-size: clamp(34px, 12vw, 130px);
           line-height: 0.87;
-          letter-spacing: -0.03em;
+          letter-spacing: -0.02em;
           text-transform: uppercase;
+          overflow-wrap: anywhere;
         }
 
         .tm-button,
@@ -1002,6 +1003,79 @@ export default function Page() {
 
         .tm-inline-link:hover {
           opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+          .tm-shell {
+            padding: 14px;
+            gap: 14px;
+          }
+
+          .tm-title {
+            font-size: clamp(34px, 13vw, 58px);
+            line-height: 0.9;
+          }
+
+          .tm-button,
+          .tm-cta {
+            font-size: 11px;
+            padding: 10px 12px;
+          }
+
+          .tm-cta {
+            justify-self: stretch;
+            width: 100%;
+            text-align: center;
+          }
+
+          .tm-seo {
+            padding: 14px;
+          }
+
+          .tm-seo h1 {
+            font-size: clamp(28px, 11vw, 44px);
+          }
+
+          .tm-seo p {
+            font-size: 13px;
+            line-height: 1.45;
+          }
+
+          .tm-inline-slider,
+          .tm-inline-slider input[type="range"] {
+            width: 130px;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .tm-shell {
+            padding: 12px;
+            gap: 12px;
+          }
+
+          .tm-title {
+            font-size: clamp(30px, 12.5vw, 44px);
+            letter-spacing: -0.015em;
+          }
+
+          .tm-seo {
+            padding: 12px;
+          }
+
+          .tm-seo h1 {
+            font-size: clamp(24px, 10.5vw, 36px);
+            line-height: 0.95;
+          }
+
+          .tm-seo p {
+            font-size: 12px;
+          }
+
+          .tm-button,
+          .tm-cta {
+            font-size: 10px;
+            padding: 9px 10px;
+          }
         }
       `}</style>
 
