@@ -27,7 +27,6 @@ const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 const MIN_WPM = 10;
 const MAX_WPM = 65;
 const DEFAULT_WPM = 40;
-const IOS_FULLSCREEN_HINT_SESSION_KEY = "promptermaster-ios-fullscreen-hint-shown";
 
 function formatTime(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));
@@ -242,6 +241,7 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
   const lastFrameRef = useRef<number | null>(null);
   const hideHudTimeoutRef = useRef<number | null>(null);
   const fullscreenHintTimeoutRef = useRef<number | null>(null);
+  const hasShownIosFullscreenHintRef = useRef(false);
   const virtualScrollTopRef = useRef(0);
   const elapsedMsRef = useRef(0);
 
@@ -263,25 +263,14 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
   }, []);
 
   const showIosFullscreenFallbackHint = useCallback(() => {
-    const ua = navigator.userAgent;
-    const hasTouch = navigator.maxTouchPoints > 1;
-    const isIosOrIpadOs =
-      ua.includes("iPhone") ||
-      ua.includes("iPad") ||
-      (ua.includes("Macintosh") && hasTouch);
+    const isIOS =
+      /iPhone|iPad|Macintosh/.test(navigator.userAgent) &&
+      navigator.maxTouchPoints > 1;
 
-    if (!isIosOrIpadOs) {
+    if (!isIOS || hasShownIosFullscreenHintRef.current) {
       return;
     }
-
-    try {
-      if (window.sessionStorage.getItem(IOS_FULLSCREEN_HINT_SESSION_KEY) === "1") {
-        return;
-      }
-      window.sessionStorage.setItem(IOS_FULLSCREEN_HINT_SESSION_KEY, "1");
-    } catch {
-      // Ignore storage access issues and still show once in-memory.
-    }
+    hasShownIosFullscreenHintRef.current = true;
 
     setShowIosFullscreenHint(true);
     if (fullscreenHintTimeoutRef.current) {
@@ -610,29 +599,35 @@ function PrompterView({ script, settings, onSettingsChange, onExit }: PrompterVi
         <div
           style={{
             position: "fixed",
-            top: "14px",
-            left: "16px",
-            right: "16px",
-            border: "1px solid #fff",
-            background: "rgba(0, 0, 0, 0.75)",
-            padding: "8px 10px",
-            zIndex: 56,
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.85)",
+            padding: "12px 16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "10px",
-            fontFamily: MONO,
-            fontSize: "11px",
-            letterSpacing: "0.02em",
+            fontFamily: "var(--font-inter)",
+            fontSize: "13px",
+            color: "#fff",
             textTransform: "none",
           }}
         >
-          <span>For fullscreen on iPad: tap Share → Add to Home Screen</span>
+          <span>For fullscreen on iPad & iPhone: tap Share ↑ then &apos;Add to Home Screen&apos;</span>
           <button
             type="button"
-            className="tm-button"
             onClick={dismissIosFullscreenHint}
-            style={{ borderColor: "#fff", color: "#fff", padding: "4px 8px" }}
+            style={{
+              border: "none",
+              background: "transparent",
+              color: "#fff",
+              fontSize: "13px",
+              cursor: "pointer",
+              padding: 0,
+              lineHeight: 1,
+            }}
             aria-label="Dismiss fullscreen hint"
           >
             X
