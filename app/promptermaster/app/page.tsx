@@ -861,9 +861,14 @@ export default function Page() {
         background: "var(--bg)",
         color: "var(--text-primary)",
         fontFamily: "var(--font-inter)",
+        overflowX: "hidden",
       }}
     >
       <style>{`
+        *, *::before, *::after {
+          box-sizing: border-box;
+        }
+
         main[data-theme="light"] {
           --bg: #f1ede8;
           --text-primary: #1a1a1a;
@@ -890,6 +895,7 @@ export default function Page() {
           padding: clamp(16px, 3vw, 38px);
           display: grid;
           gap: 22px;
+          box-sizing: border-box;
         }
 
         .tm-title {
