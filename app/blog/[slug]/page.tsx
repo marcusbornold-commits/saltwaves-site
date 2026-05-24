@@ -36,11 +36,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] px-6 py-24 text-white sm:px-10 lg:px-20">
+    <main className="min-h-screen bg-[#1a1a1a] px-6 py-24 text-[#f1ede8] sm:px-10 lg:px-20">
       <article className="mx-auto max-w-3xl">
         <Link
           href="/blog"
-          className="text-xs uppercase tracking-[0.16em] text-white/60 transition-opacity hover:opacity-75"
+          className="text-xs uppercase tracking-[0.16em] text-[#f1ede8]/60 transition-opacity hover:opacity-75"
         >
           Back to blog
         </Link>
@@ -48,7 +48,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {post.frontmatter.title}
         </h1>
         {post.frontmatter.date ? (
-          <p className="mt-4 text-xs uppercase tracking-[0.18em] text-white/50">
+          <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#f1ede8]/50">
             {new Date(post.frontmatter.date).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
@@ -57,7 +57,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </p>
         ) : null}
         {post.frontmatter.description ? (
-          <p className="mt-8 text-xl text-white/75">{post.frontmatter.description}</p>
+          <p className="mt-8 text-xl text-[#f1ede8]/75">{post.frontmatter.description}</p>
         ) : null}
         <div className="blog-content mt-10">
           {post.content}
