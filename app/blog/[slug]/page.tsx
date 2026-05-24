@@ -45,7 +45,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         >
           Back to blog
         </Link>
-        <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#ff6200] sm:text-5xl">
           {post.frontmatter.title}
         </h1>
         {post.frontmatter.date ? (
@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2
+                <h3
                   style={{
                     fontFamily: "var(--display)",
                     fontWeight: 400,
@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   }}
                 >
                   {children}
-                </h2>
+                </h3>
               ),
               h3: ({ children }) => (
                 <h3
