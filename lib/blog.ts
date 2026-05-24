@@ -1,6 +1,6 @@
-import { compileMDX } from "next-mdx-remote/rsc";
 import fs from "node:fs/promises";
 import path from "node:path";
+import matter from "gray-matter";
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
@@ -37,10 +37,8 @@ export async function getAllPostsMeta(): Promise<BlogPostMeta[]> {
     mdxFiles.map(async (fileName) => {
       const slug = stripExtension(fileName);
       const source = await fs.readFile(path.join(BLOG_DIR, fileName), "utf8");
-      const { frontmatter } = await compileMDX<BlogFrontmatter>({
-        source,
-        options: { parseFrontmatter: true },
-      });
+      const parsed = matter(source);
+      const frontmatter = parsed.data as BlogFrontmatter;
 
       return {
         slug,
@@ -58,10 +56,9 @@ export async function getPostBySlug(slug: string) {
   const sourcePath = path.join(BLOG_DIR, `${slug}.mdx`);
   try {
     const source = await fs.readFile(sourcePath, "utf8");
-    const { frontmatter, content } = await compileMDX<BlogFrontmatter>({
-      source,
-      options: { parseFrontmatter: true },
-    });
+    const parsed = matter(source);
+    const frontmatter = parsed.data as BlogFrontmatter;
+    const content = parsed.content;
 
     return {
       slug,

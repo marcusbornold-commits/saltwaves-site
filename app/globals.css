@@ -70,3 +70,11 @@ body {
   letter-spacing: -0.01em;
   margin-top: 2.2rem;
 }
+
+.blog-excerpt {
+  color: #ff6200;
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}

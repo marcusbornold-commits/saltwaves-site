@@ -22,7 +22,7 @@ export default async function BlogPage() {
                   {post.title}
                 </Link>
                 {post.description ? (
-                  <p className="mt-2 max-w-2xl text-[#f1ede8]/70">{post.description}</p>
+                  <p className="blog-excerpt">{post.description}</p>
                 ) : null}
                 {post.date ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[#f1ede8]/50">
