@@ -8,23 +8,23 @@ const waveHeights = [
 const problems = [
   {
     icon: "📋",
-    title: "Ingen oversikt",
-    body: "Projektstatus, scheman och resurser lever i olika system - och ingen har den fullstandiga bilden i realtid.",
+    title: "Ingen översikt",
+    body: "Projektstatus, scheman och resurser lever i olika system - och ingen har den fullständiga bilden i realtid.",
   },
   {
     icon: "🔁",
-    title: "Repetitiva floden",
-    body: "Samma tekniska steg upprepas for varje event eller sandning. Tid som kunde ga till kvalitet gar till administration.",
+    title: "Repetitiva flöden",
+    body: "Samma tekniska steg upprepas för varje event eller sändning. Tid som kunde gå till kvalitet går till administration.",
   },
   {
     icon: "🔌",
     title: "Verktyg som inte pratar",
-    body: "vMix, Companion, schemalaggning, fakturering - alla i separata fonster. Data kopieras manuellt fram och tillbaka.",
+    body: "vMix, Companion, schemaläggning, fakturering - alla i separata fönster. Data kopieras manuellt fram och tillbaka.",
   },
   {
     icon: "🧩",
-    title: "Generiska losningar passar inte",
-    body: "Hyllvaran ar byggd for alla - inte for AV-produktionens specifika krav och arbetsfloden.",
+    title: "Generiska lösningar passar inte",
+    body: "Hyllvaran är byggd för alla - inte för AV-produktionens specifika krav och arbetsflöden.",
   },
 ];
 
@@ -32,25 +32,25 @@ const services = [
   {
     num: "01",
     title: "Produktionsdashboards",
-    body: "Skraddarsydda kontrollpaneler for live-event, streaming och broadcast - allt samlat i ett granssnitt. Rundown, status, tider och resurser i realtid.",
+    body: "Skräddarsydda kontrollpaneler för live-event, streaming och broadcast - allt samlat i ett gränssnitt. Rundown, status, tider och resurser i realtid.",
     tag: "Webb / iPad",
   },
   {
     num: "02",
-    title: "Automationsfloden",
-    body: "Koppla ihop dina befintliga verktyg - Companion, vMix, NDI, schemalaggning - och automatisera det som idag gors manuellt.",
+    title: "Automationsflöden",
+    body: "Koppla ihop dina befintliga verktyg - Companion, vMix, NDI, schemaläggning - och automatisera det som idag görs manuellt.",
     tag: "Integration",
   },
   {
     num: "03",
     title: "Interna rapporteringsverktyg",
-    body: "Tidrapportering, fakturaunderlag och eventoversikter automatiserade fran kalldata - inga manuella sammanstallningar.",
+    body: "Tidrapportering, fakturaunderlag och eventöversikter automatiserade från kalldata - inga manuella sammanställningar.",
     tag: "Automation",
   },
   {
     num: "04",
-    title: "Streaming & sandningsverktyg",
-    body: "Anpassade losningar for live-produktion: grafik-triggers, rundown-integration, multiplatform-distribution och teknisk monitoring.",
+    title: "Streaming & sändningsverktyg",
+    body: "Anpassade lösningar för live-produktion: grafik-triggers, rundown-integration, multiplatform-distribution och teknisk monitoring.",
     tag: "Live / Broadcast",
   },
 ];
@@ -58,18 +58,18 @@ const services = [
 const whyItems = [
   {
     num: "20",
-    title: "20 ar i branschen",
+    title: "20 år i branschen",
     body: "Live-ljud, broadcast, TV-produktion och streaming. Vi vet hur det faktiskt ser ut bakom scenen - inte bara i teorin.",
   },
   {
     num: "✦",
-    title: "Skraddarsytt, inte mall",
-    body: "Varje losning byggs efter ditt specifika flode. Ingen onodig komplexitet - exakt det du behover.",
+    title: "Skräddarsytt, inte mall",
+    body: "Varje lösning byggs efter ditt specifika flöde. Ingen onödig komplexitet - exakt det du behöver.",
   },
   {
     num: "→",
     title: "Snabb leverans",
-    body: "Liten firma, direkt kontakt, korta beslutsvagar. Fran brief till fungerande verktyg utan onodig overhead.",
+    body: "Liten firma, direkt kontakt, korta beslutsvägar. Från brief till fungerande verktyg utan onödig overhead.",
   },
 ];
 
@@ -116,7 +116,7 @@ export default function ServicesPage() {
           className="mb-6 font-[family-name:var(--font-space)] text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6200]"
           style={{ animation: "servicesFadeUp 0.6s ease both" }}
         >
-          Skraddarsydda produktionsverktyg & automation
+          Skräddarsydda produktionsverktyg & automation
         </p>
         <h1
           className="mb-8 max-w-[780px] font-[family-name:var(--font-archivo)] text-[clamp(2.8rem,6vw,5.5rem)] leading-[1.05]"
@@ -132,8 +132,8 @@ export default function ServicesPage() {
           className="max-w-[560px] font-[family-name:var(--font-space)] text-[1.1rem] leading-[1.7] text-[#d4cfc9]"
           style={{ animation: "servicesFadeUp 0.6s 0.2s ease both" }}
         >
-          Vi bygger interna verktyg, dashboards och arbetsfloden skraddarsydda
-          for sma produktionsbolag och eventfirmor - sa du kan fokusera pa det
+          Vi bygger interna verktyg, dashboards och arbetsflöden skräddarsydda
+          för små produktionsbolag och eventfirmor - så du kan fokusera på det
           kreativa arbetet.
         </p>
 
@@ -160,16 +160,16 @@ export default function ServicesPage() {
 
       <section className="relative z-[1] bg-[#1a1a1a] px-6 py-24 sm:px-12">
         <p className="mb-4 font-[family-name:var(--font-space)] text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#ff6200]">
-          Kanner du igen dig?
+          Känner du igen dig?
         </p>
         <h2 className="mb-6 font-[family-name:var(--font-archivo)] text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.1]">
           Manuellt arbete som
           <br />
-          stal din kreativa tid
+          stjäl din kreativa tid
         </h2>
         <p className="max-w-[600px] font-[family-name:var(--font-space)] text-[1.05rem] leading-[1.75] text-[#d4cfc9]">
-          Produktionsbolag och eventfirmor spenderar for mycket tid pa
-          repetitiva tekniska uppgifter istallet for att skapa. Vi loser det.
+          Produktionsbolag och eventfirmor spenderar för mycket tid på
+          repetitiva tekniska uppgifter istället för att skapa. Vi löser det.
         </p>
 
         <div className="mt-14 grid gap-6 md:grid-cols-2">
@@ -200,7 +200,7 @@ export default function ServicesPage() {
         <h2 className="mb-10 font-[family-name:var(--font-archivo)] text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.1]">
           Verktyg som faktiskt
           <br />
-          passar ditt flode
+          passar ditt flöde
         </h2>
 
         <div className="mt-16 flex flex-col gap-0.5">
@@ -232,12 +232,12 @@ export default function ServicesPage() {
 
       <section className="relative z-[1] bg-[#1a1a1a] px-6 py-24 sm:px-12">
         <p className="mb-4 font-[family-name:var(--font-space)] text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#ff6200]">
-          Varfor Saltwaves
+          Varför Saltwaves
         </p>
         <h2 className="mb-10 font-[family-name:var(--font-archivo)] text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.1]">
-          Byggt av nagon som
+          Byggt av någon som
           <br />
-          forstar produktionen
+          förstår produktionen
         </h2>
 
         <div className="mt-16 grid overflow-hidden rounded border border-[#f1ede8]/10 md:grid-cols-3">
@@ -259,14 +259,14 @@ export default function ServicesPage() {
 
       <section className="relative z-[1] border-t border-[#ff6200]/20 bg-[linear-gradient(135deg,#1a1400_0%,#0a0a0a_60%)] px-6 py-24 text-center sm:px-12">
         <p className="mb-4 font-[family-name:var(--font-space)] text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#ff6200]">
-          Kom igang
+          Kom igång
         </p>
         <h2 className="mx-auto mb-5 max-w-[600px] font-[family-name:var(--font-archivo)] text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.1]">
-          Beratta om ditt flode - vi loser resten
+          Berätta om ditt flöde - vi löser resten
         </h2>
         <p className="mb-10 font-[family-name:var(--font-space)] text-[1.05rem] text-[#d4cfc9]">
-          Kostnadsfritt samtal. Vi lyssnar, forstar och berattar vad som ar
-          mojligt.
+          Kostnadsfritt samtal. Vi lyssnar, förstår och berättar vad som är
+          möjligt.
         </p>
         <a
           href="mailto:hello@saltwaves.studio?subject=Intresseanmälan – Produktionsverktyg"
