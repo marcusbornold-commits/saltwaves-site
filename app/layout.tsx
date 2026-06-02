@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Archivo_Black } from "next/font/google";
+import { Archivo_Black, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -18,6 +18,12 @@ const archivoBlack = Archivo_Black({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-archivo",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-space",
 });
 
 export const metadata: Metadata = {
@@ -46,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${archivoBlack.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${archivoBlack.variable} ${spaceGrotesk.variable} antialiased`}
       >
         {children}
       </body>

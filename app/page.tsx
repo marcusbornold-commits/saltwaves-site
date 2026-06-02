@@ -70,6 +70,12 @@ export default function Home() {
           >
             Visit the blog
           </Link>
+          <Link
+            href="/services"
+            className="inline-block text-sm uppercase tracking-[0.14em] text-white/75 transition-opacity hover:opacity-70"
+          >
+            Services
+          </Link>
         </div>
       </section>
     </main>
