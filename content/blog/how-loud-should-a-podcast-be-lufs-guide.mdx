@@ -1,0 +1,75 @@
+---
+title: How Loud Should a Podcast Be? A Plain-English LUFS Guide
+description: Your episode sounds perfect in your headphones — then Spotify makes it quiet. A plain-English guide to LUFS, platform targets, and what to actually aim for.
+date: '2026-06-17'
+---
+
+Your episode sounds perfect in your headphones. Then a listener plays it on Spotify and it's noticeably quieter than the show they listened to before yours. They nudge the volume up — and the next episode ambushes them. That whole frustrating experience comes down to one number most podcasters have never measured: LUFS.
+
+This guide explains what LUFS is, what level you should actually target, and how each major platform treats the audio you upload. No jargon you don't need.
+
+### What LUFS actually measures
+
+LUFS stands for Loudness Units relative to Full Scale. The important part isn't the acronym — it's *what* it measures. Unlike a peak meter, which catches the single loudest instant in your file, LUFS measures the **average perceived loudness across the whole episode**, weighted to match how human ears actually hear.
+
+That distinction matters. You can have two episodes where the loudest peaks are identical, but one feels twice as loud because its *average* level sits higher. Listeners don't experience peaks — they experience the average. LUFS is the number that reflects what they actually hear.
+
+The values are always negative (e.g. −16 LUFS), and counterintuitively, **a number closer to zero is louder**. So −14 LUFS is louder than −16 LUFS.
+
+### Peak vs. loudness — the other number that matters
+
+There are really two measurements you care about:
+
+- **Integrated LUFS** — the average loudness over the entire file. This is your main target.
+- **True Peak (dBTP)** — the absolute highest point the waveform reaches. This is your safety ceiling, set to stop distortion when the file gets encoded and re-encoded by streaming platforms.
+
+The standard recommendation is to keep True Peak at **−1 dBTP**. That headroom prevents the nasty clipping artifacts that appear when a platform re-compresses your audio.
+
+### The target numbers, platform by platform
+
+Here's where most guides get muddy, so let's be precise about how each platform behaves with podcast audio.
+
+- **Apple Podcasts** — normalizes to **−16 LUFS**. The long-standing podcast reference target.
+- **Spotify** — normalizes to **−14 LUFS**. Turns louder audio down; may boost quieter audio.
+- **YouTube** — normalizes to **−14 LUFS**. Only turns loud audio *down* — never boosts quiet audio.
+
+A few things worth understanding behind those numbers.
+
+Apple Podcasts recommends −16 LUFS and Spotify recommends −14 LUFS, and most podcasts have historically used Apple's −16 LUFS as the reference. The two aren't as far apart in practice as they look, because the platforms normalize on playback regardless.
+
+YouTube behaves differently from Spotify in one key way. YouTube normalizes all uploaded audio to −14 LUFS — if your file is louder it gets turned down, and if it's quieter it plays as-is. The practical consequence: mastering louder than −14 LUFS gives you no benefit on YouTube, because your track just gets turned down and loses dynamic range for nothing.
+
+There's also a mono vs. stereo wrinkle that trips people up. For podcasts, the common targets are −16 LUFS for stereo and −19 LUFS for mono. If you record a solo show in mono and master it to a stereo target, it can end up sounding quieter than you expect once it's normalized.
+
+### So what should you actually aim for?
+
+If you want a single answer that works almost everywhere without overthinking it: aim for −14 LUFS with a True Peak of −1.0 dBTP — that satisfies Spotify and YouTube and sits comfortably within Apple's range.
+
+If your show is speech-only and you care most about the traditional podcast apps, −16 LUFS is the safer, more conservative reference and still widely used. Either is defensible. What you should *not* do is master significantly louder than −14 in the hope of standing out — the platforms will simply turn you back down, and you'll have crushed your dynamics for nothing.
+
+### Why loudness alone isn't the finish line
+
+Hitting your LUFS target is necessary, but it's not the same as sounding good. A common mistake is to crank a compressor and limiter hard just to force the number up — which leaves you with flat, fatiguing, over-squashed dialog. Over-compressed dialog sounds harsh and fatiguing, and the biggest listener complaint about podcasts is actually inconsistent volume between speakers — so before chasing a LUFS target, make sure every speaker sits at a similar level.
+
+In other words: loudness normalization is the *last* step of a good chain, not a substitute for one. Consistent speaker levels, gentle compression, de-essing, and a clean signal all come first. Get those right, and hitting −14 or −16 LUFS is just the final calibration — not a rescue operation.
+
+### Check your levels before you publish
+
+You can't fix what you haven't measured. Before you upload an episode, it's worth confirming your integrated LUFS and True Peak so you know exactly how each platform will treat it.
+
+That's exactly what our free **Loudness Inspector** does — drop in a file and instantly see your integrated LUFS and True Peak, with the platform targets right there for comparison. No install, no signup. It's the fastest way to catch a too-loud or too-quiet master before your listeners do.
+
+And if the measurement tells you the levels are off, that's where mastering comes in: PodMaster handles the full chain — levelling, compression, de-essing and loudness normalisation — so your episode lands on target *and* sounds natural, not squashed.
+
+### The short version
+
+- LUFS measures average perceived loudness across the whole episode — the number closer to zero is louder.
+- Target **−14 LUFS / −1 dBTP** for a single file that works across Spotify, YouTube and Apple; **−16 LUFS** is the conservative speech-podcast reference.
+- Mono shows aim a bit lower (around −19 LUFS) than stereo.
+- Don't master louder than the target to "stand out" — platforms turn you down and you lose dynamics for nothing.
+- Loudness is the last step, not the whole job. Consistent speaker levels and a clean chain come first.
+- Measure before you publish — check your file in the Loudness Inspector.
+
+---
+
+*Check your episode's loudness free in the Loudness Inspector — see your integrated LUFS and True Peak against every major platform's target, instantly, in your browser.*
