@@ -1,0 +1,68 @@
+---
+title: How to Remove Echo From a Podcast Recording (Without Making It Sound Robotic)
+description: Echo ruins otherwise solid episodes. Here's why it's hard to remove, what actually works, and where automated tools fall apart.
+date: '2026-06-16'
+---
+
+You hit record, the conversation flowed, the guest was great — and then you played it back. That hollow, distant, slightly cavernous sound. Echo. Reverb. Room. Whatever you call it, it's the single fastest way to make an otherwise solid episode sound amateur.
+
+The good news: it's fixable. The better news: you don't need to re-record, and you don't need a treated studio. This guide walks through why echo happens, what actually works to remove it, and where most automated tools quietly fall apart.
+
+### What echo actually is (and why it's so hard to remove)
+
+When you speak, the sound doesn't travel only into your microphone. It bounces off walls, the desk, the window, the ceiling — and those reflections arrive at the mic a few milliseconds after your direct voice. That smeared, overlapping copy of your voice is reverb. In a small untreated room it's usually short and boxy; in a large hard-surfaced room it's longer and more obviously "echoey."
+
+The reason it's hard to remove is that the reflections *are your voice*. There's no clean line between the signal you want and the room you don't — they're tangled together in the same frequencies, at the same moment. A simple noise filter can strip out a steady hum or a fan, because that noise is predictable and separate. Reverb isn't. That's why crude echo removal so often takes the life out of a voice along with the room.
+
+### Why recording better beats fixing it later
+
+Before any processing, it's worth saying: the cheapest echo fix is the one you do at the source. A few things that make a disproportionate difference:
+
+- **Get closer to the mic.** The closer you are, the louder your direct voice is relative to the reflections. Distance is the enemy.
+- **Record in a smaller, softer space.** Soft furnishings, a clothes rail, a duvet, even a closet full of clothes — anything that absorbs reflections instead of bouncing them.
+- **Aim the mic away from hard surfaces.** Point it toward something soft, not toward a bare wall or window.
+- **Avoid the centre of the room.** Corners and dead-centre positions are usually the worst for standing reflections.
+
+None of this requires money. But if the recording already exists and the echo is baked in, you're into repair territory.
+
+### The repair options, honestly compared
+
+#### Manual EQ and gating
+
+You can tame mild reverb with a high-pass filter, careful EQ cuts around the boxy frequencies (often somewhere between 200–500 Hz), and a noise gate that closes between phrases so the room "tail" isn't audible in the gaps. This works for *light* room sound and gives you full control. It does almost nothing for genuinely heavy reverb, and a gate set too aggressively produces unnatural chopping where words get clipped at the edges.
+
+#### Built-in tools in your DAW
+
+Most editors (Audacity, Reaper, Audition) now ship some form of de-reverb. They're fine for a quick pass on a mild problem. On harder material they tend to either under-correct or introduce a watery, "underwater" artifact as they pull the reflections out.
+
+#### AI-based de-reverb
+
+This is where the real progress has happened. Modern models are trained to recognise the difference between a direct voice and its reflections, and they can lift out a remarkable amount of room — far more than EQ and gating ever could. But there's a catch that's worth understanding before you trust any of them.
+
+### The robotic-artifact problem nobody warns you about
+
+Here's the trap with a lot of one-click AI cleanup tools: they're aggressive, and aggression has a cost. When a model strips reverb (and noise) too hard, it starts removing things that were part of the voice itself — breaths, the natural decay at the end of words, the subtle texture that makes a human sound human. What you're left with is intelligible but lifeless: a flat, processed, slightly synthetic voice. Listeners can't always name it, but they feel it. It's the uncanny-valley version of "clean."
+
+Several of the most popular automated podcast tools are widely reported to do exactly this on harder source material — prioritising a dramatic before/after over a natural result. The clip sounds impressive in a 10-second demo and tiring across a 45-minute episode.
+
+The goal isn't *maximum* echo removal. It's removing the room while leaving the voice intact. That balance is the whole game.
+
+### How PodMaster approaches it
+
+PodMaster is built around a de-reverb model fine-tuned specifically on real room acoustics — recordings made in actual spaces, curated by ear rather than scraped indiscriminately. The point of that curation is the balance above: pulling the room out of the recording without hollowing out the voice that was in it.
+
+It also doesn't stop at de-reverb. Echo is rarely the only problem in a real recording — there's usually some boxiness, some harshness, inconsistent levels and loudness to deal with too. PodMaster runs the de-reverbed voice through a full mastering chain (EQ, gating, compression, de-essing, loudness normalisation) so the output is a finished, broadcast-ready episode rather than just a de-echoed file you still have to mix.
+
+When PodMaster opens, you'll be able to upload a recording and hear the result on your own audio — full quality, no watermark — before deciding anything. The fastest way to know whether de-reverb has been done well is simply to listen to it on something you recorded yourself.
+
+### The short version
+
+- Echo is reverb: your own voice, reflected back a few milliseconds late and tangled into the same frequencies.
+- Fix it at the source first — closer mic, softer/smaller space — because that's free and beats any repair.
+- For existing recordings, manual EQ and gating handle light room sound; AI de-reverb handles the heavy stuff.
+- The real risk with AI tools is over-processing into a robotic, lifeless voice. Aim for natural, not maximally clean.
+- Try it on your own audio. Your ears are the only benchmark that matters.
+
+---
+
+*PodMaster opens for beta on 7 July. Join the waitlist to get early access and be first to try free de-reverb and mastering on your own episodes.*
