@@ -13,12 +13,20 @@ export default function Home() {
             Professional audio tools for creators
           </h1>
           <SignupForm />
-          <Link
-            href="/promptermaster"
-            className="inline-block mt-6 text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
-          >
-            Free Teleprompter →
-          </Link>
+          <div className="mt-6 flex gap-8">
+            <Link
+              href="/promptermaster"
+              className="inline-block text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
+            >
+              Free Teleprompter →
+            </Link>
+            <Link
+              href="/podcast-loudness-checker"
+              className="inline-block text-sm uppercase tracking-[0.14em] text-[#ff6200] transition-opacity hover:opacity-70"
+            >
+              Podcast Loudness Checker →
+            </Link>
+          </div>
         </div>
       </section>
 
