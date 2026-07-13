@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import { MDXRemote } from "next-mdx-remote/rsc";
 
 import { getAllPostsMeta, getPostBySlug } from "@/lib/blog";
+import { mdxComponents } from "@/lib/mdx-components";
 
 type BlogPostPageProps = {
   params: { slug: string };
@@ -61,50 +62,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <p className="mt-8 text-xl text-[#f1ede8]/75">{post.frontmatter.description}</p>
         ) : null}
         <div className="blog-content mt-10">
-          <ReactMarkdown
-            components={{
-              h1: ({ children }) => (
-                <h1 style={{ fontFamily: "var(--display)", fontWeight: 400 }}>
-                  {children}
-                </h1>
-              ),
-              h2: ({ children }) => (
-                <h3
-                  style={{
-                    fontFamily: "var(--display)",
-                    fontWeight: 400,
-                    marginTop: "1.5rem",
-                  }}
-                >
-                  {children}
-                </h3>
-              ),
-              h3: ({ children }) => (
-                <h3
-                  style={{
-                    fontFamily: "var(--display)",
-                    fontWeight: 400,
-                    marginTop: "1.2rem",
-                  }}
-                >
-                  {children}
-                </h3>
-              ),
-              p: ({ children }) => (
-                <p
-                  style={{
-                    fontFamily: "var(--body)",
-                    lineHeight: 1.7,
-                    marginTop: "0.75rem",
-                  }}
-                >
-                  {children}
-                </p>
-              ),
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
+          <MDXRemote source={post.content} components={mdxComponents} />
         </div>
       </article>
     </main>
