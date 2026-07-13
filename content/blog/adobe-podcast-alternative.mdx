@@ -1,0 +1,80 @@
+---
+title: "Adobe Podcast Alternative: When Enhance Speech Isn't Enough"
+description: Adobe Podcast Enhance is genuinely good at rescuing bad recordings — and it still leaves your episode unfinished. Here's what it misses, and what to use instead.
+date: '2026-07-13'
+---
+
+Let me start with something you won't read in most "alternative" articles: Adobe Podcast Enhance Speech is good. If you recorded an interview on a laptop mic in a kitchen, it will pull the voice out of the noise in a way that felt like science fiction five years ago. It's free, it runs in the browser, and for pure rescue jobs it's hard to argue with.
+
+So why are you here, searching for an alternative?
+
+Probably because you've noticed one of three things. Your voice comes out sounding slightly *wrong* — smooth in a way real voices aren't. Or your episodes still get flagged, turned down, or sound quieter than everyone else's on Spotify. Or every episode sounds a little different from the last one, and you can't figure out why.
+
+All three have the same root cause: **Enhance Speech is a cleanup tool, not a mastering tool.** It solves the first problem in your chain and leaves the rest untouched. After twenty years mixing live broadcast and TV audio, I can tell you that noise removal is maybe a third of what stands between a raw recording and something that's ready to publish.
+
+Let's go through what actually happens — and doesn't happen — when you run your episode through it.
+
+## Where Adobe Enhance genuinely wins
+
+Fair is fair. Use Enhance Speech when:
+
+- The recording is genuinely bad — laptop mic, echoey room, traffic outside. This is rescue territory, and rescue is what the tool was built for.
+- You need one file fixed, right now, for free.
+- You recorded a remote guest on a phone and there's no going back.
+
+If that's your whole situation, close this tab and go use it. No hard feelings.
+
+But if you publish regularly and care how your show sounds next to professionally produced podcasts, keep reading.
+
+## Gap 1: The processed voice problem
+
+Run a decent recording through aggressive speech enhancement and listen closely to the result. The noise is gone — and so is something else. Consonants get slightly softened. The natural texture of the voice flattens. Quiet passages and breath sounds behave strangely, because the model is constantly deciding what counts as "speech" and what gets suppressed.
+
+Users have documented this consistently since the V2 model shipped: voices that sound subtly robotic, muffled moments at the start and end of clips, and odd artifacts during silences. Adobe's own answer is the strength slider — dial the processing down until it sounds natural again. Which is honest of them, but notice what it means: the fix for the tool is *using less of the tool*. And the slider is a paid feature; on the free tier you get full strength or nothing.
+
+There's a second version of this problem that bites interview shows specifically. If two voices share one track — a guest bleeding into your mic, or a single Zoom recording — the model can't reliably tell the primary speaker from the bleed, and the output distorts in ways no slider fixes. The real solution is separate tracks at the recording stage, but that doesn't help the fifty episodes you've already recorded.
+
+Here's the deeper issue, and it's a design philosophy, not a bug: a general-purpose enhancement model is trained to make *everything* sound like one idealized voice in one idealized room. That's the right call for rescuing terrible audio. It's the wrong call for a voice that was already good — which is why people with proper microphones in treated rooms often report the tool making their audio *worse*.
+
+## Gap 2: Your episode still isn't at the right loudness
+
+This is the gap almost nobody searching for an "Adobe Podcast alternative" knows they have — and it's the one your listeners notice most.
+
+Enhance Speech does not master your audio. There is no loudness normalization, no true peak limiting, no EQ, no compression control. What comes out is a cleaned file at whatever level it happens to land at. Adobe doesn't hide this; the product simply isn't built for it.
+
+Why it matters: every platform your show plays on has a loudness target. Apple Podcasts recommends **−16 LUFS**. Spotify normalizes around **−14 LUFS**. If your episode comes in at −22 LUFS, listeners crank the volume for your show and get blasted by the next one — the single most common reason people say a podcast "sounds amateur" without being able to explain why. If it comes in too hot with true peaks near 0 dB, the AAC encoding on the platform side clips it, and you get crispy distortion you never heard in your export.
+
+Getting this right takes measurement (integrated LUFS over the whole episode, true peak with oversampling) and proper limiting — the stuff broadcast engineers have been doing since loudness standards became law in TV. If you want to check where your own episodes land, we're building a free [Podcast Loudness Checker](/podcast-loudness-checker) that measures your file against every major platform and tells you *what the numbers mean*, not just what they are. And if you want the full background on targets and why −16 beats −14 for podcasts, read our [podcast loudness guide](/blog/how-loud-should-a-podcast-be).
+
+The short version: a cleaned file is not a delivered file. Adobe stops halfway.
+
+## Gap 3: Consistency — the thing nobody measures
+
+Episode 12 was recorded on a Tuesday morning, close to the mic, in a quiet house. Episode 13 was Thursday evening, further off-axis, with the heat pump running. Run both through a cleanup tool and you get two clean files — that still sound like two different shows.
+
+Enhancement tools process each file in isolation. They have no concept of *your* show's sound. Professional podcast networks solve this with a mastering chain: the same EQ decisions, the same dynamics behavior, the same loudness target, applied identically to every episode. That's what makes a show feel like a *product* instead of a series of recordings.
+
+This is exactly the discipline broadcast works under. Nobody at a TV station re-invents the audio chain per program — the chain is fixed, tuned by someone with ears, and everything passes through it the same way. Your podcast deserves the same treatment.
+
+## What we built instead
+
+[PodMaster](/) is not another enhancement model. It's a complete **broadcast-trained processing chain**: noise reduction trained on curated studio-grade reference material, followed by the EQ, dynamics, loudness normalization, and true peak limiting that turn a cleaned recording into a platform-ready episode. One upload, one consistent chain, delivered at the correct loudness for wherever your show plays.
+
+The chain was built the way I'd build it for a broadcast client — because for twenty years, that was my job. The training data isn't scraped from the internet; it's recorded and curated against a reference standard, which is why voices come out sounding like *themselves*, just recorded better. Not like everyone else's over-smoothed output.
+
+Hear the difference yourself:
+
+<!-- TODO: Embed before/after player — hero clip -->
+
+And a practical difference worth mentioning: your files are processed, delivered, and deleted. No persistent storage on the free tier. If you're in the EU and GDPR matters to your production, that's not a footnote.
+
+## Honest recommendation
+
+- **One terrible recording, zero budget:** use Adobe Enhance. It's the right tool.
+- **A show you publish regularly and want to sound consistent, correctly loud, and like you:** you need mastering, not just cleanup. [Try PodMaster free](/) — upload an episode and compare the result against your current workflow. Your ears will settle the argument faster than this article can.
+
+Either way: check your current episodes with the [loudness checker](/podcast-loudness-checker) first. Knowing where you actually stand is free.
+
+---
+
+*Marcus Bornold has spent 20 years in live broadcast, FOH, and TV audio production. He builds Saltwaves Studio's tools in Örebro, Sweden.*
