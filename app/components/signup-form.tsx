@@ -2,7 +2,15 @@
 
 import { FormEvent, useState } from "react";
 
-export default function SignupForm() {
+type SignupFormProps = {
+  submitLabel?: string;
+  submittingLabel?: string;
+};
+
+export default function SignupForm({
+  submitLabel = "Join",
+  submittingLabel = "Joining...",
+}: SignupFormProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +71,7 @@ export default function SignupForm() {
           disabled={isSubmitting}
           className="h-12 rounded-none border border-white bg-white px-6 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-transparent hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Joining..." : "Join"}
+          {isSubmitting ? submittingLabel : submitLabel}
         </button>
       </form>
 
