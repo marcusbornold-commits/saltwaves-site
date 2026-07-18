@@ -8,6 +8,12 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: '/privacy', destination: 'https://app.saltwaves.studio/privacy', permanent: true },
+      { source: '/terms', destination: 'https://app.saltwaves.studio/terms', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
