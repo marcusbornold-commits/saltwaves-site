@@ -17,29 +17,11 @@ export interface Platform {
 
 export const PLATFORMS: Platform[] = [
   {
-    id: "apple",
-    label: "Apple Podcasts",
+    id: "podcast",
+    label: "Podcast",
     lufs: "−16 LUFS",
     dbtp: "−1 dBTP",
     target: -16,
-    ceiling: -1,
-    tolerance: 1,
-  },
-  {
-    id: "spotify",
-    label: "Spotify",
-    lufs: "−14 LUFS",
-    dbtp: "−1 dBTP",
-    target: -14,
-    ceiling: -1,
-    tolerance: 1,
-  },
-  {
-    id: "youtube",
-    label: "YouTube",
-    lufs: "−14 LUFS",
-    dbtp: "−1 dBTP",
-    target: -14,
     ceiling: -1,
     tolerance: 1,
   },
@@ -53,8 +35,17 @@ export const PLATFORMS: Platform[] = [
     tolerance: 1,
   },
   {
-    id: "broadcast",
-    label: "Broadcast (ATSC A/85)",
+    id: "broadcast_eu",
+    label: "Broadcast playout (EU)",
+    lufs: "−23 LUFS",
+    dbtp: "−1 dBTP",
+    target: -23,
+    ceiling: -1,
+    tolerance: 1,
+  },
+  {
+    id: "broadcast_us",
+    label: "Broadcast playout (US)",
     lufs: "−24 LKFS",
     dbtp: "−2 dBTP",
     target: -24,
@@ -121,8 +112,8 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
     pass: false,
     headline:
       delta > 0
-        ? `Too loud for ${p.label} by ${Math.abs(delta).toFixed(1)} LU.`
-        : `Too quiet for ${p.label} by ${Math.abs(delta).toFixed(1)} LU.`,
+        ? `Too loud by ${Math.abs(delta).toFixed(1)} LU.`
+        : `Too quiet by ${Math.abs(delta).toFixed(1)} LU.`,
     detail:
       delta > 0
         ? `The platform will turn this down on playback. Whatever compression ` +
@@ -184,7 +175,7 @@ export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
   if (delta < -p.tolerance) {
     out.push({
       id: "quiet",
-      title: `Sitting ${Math.abs(delta).toFixed(1)} LU under target`,
+      title: `This is ${Math.abs(delta).toFixed(1)} LU too quiet`,
       body:
         `Quiet is not automatically safe. Listeners compensate with the volume ` +
         `control, which lifts the noise floor, breaths and room tone along with ` +
@@ -209,16 +200,16 @@ export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
     });
   }
 
-  if (r.lra > 14) {
+  if (r.lra > 8) {
     out.push({
       id: "wide",
-      title: `Loudness range is ${r.lra.toFixed(1)} LU — very wide`,
+      title: `Loudness range is ${r.lra.toFixed(1)} LU — wide for spoken word`,
       body:
-        `That much movement suits film, not headphones on a commute. The quiet ` +
-        `passages fall under road noise and the loud ones startle, which sends ` +
-        `the listener to the volume control repeatedly. Wide range is a mixing ` +
-        `virtue and a delivery liability.`,
-      fix: `Gentle levelling before the limiter — slow compression at a low ratio, or clip gain on the loudest passages — usually brings this into range without flattening the voice.`,
+        `Around 5 LU is the comfortable target for a podcast. Above that, the ` +
+        `usual cause is two voices sitting at different levels rather than ` +
+        `deliberate dynamics, and the result is an episode that works at a ` +
+        `desk and falls apart in a car.`,
+      fix: `Match the voices to each other before the limiter rather than compressing the mix harder afterwards.`,
       weight: 55,
     });
   }

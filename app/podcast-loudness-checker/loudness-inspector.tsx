@@ -33,13 +33,15 @@ export default function LoudnessInspector() {
     setFileName(file.name);
     setResult(null);
     setError(null);
-    setStatus("Decoding…");
 
     if (file.size > MAX_MB * 1024 * 1024) {
       setPhase("error");
       setError(`File is larger than ${MAX_MB} MB. Try a compressed export.`);
       return;
     }
+
+    const mb = (file.size / 1048576).toFixed(0);
+    setStatus(`Decoding ${mb} MB — this can take a moment on long files…`);
 
     const startedAt = performance.now();
     try {
