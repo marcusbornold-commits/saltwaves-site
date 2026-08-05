@@ -77,8 +77,6 @@ export interface Diagnosis {
   weight: number;
 }
 
-const signed = (v: number) => `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`;
-
 export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
   const delta = r.integratedLufs - p.target;
   const loudOk = Math.abs(delta) <= p.tolerance;
