@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import SignupForm from "../components/signup-form";
+import LoudnessInspector from "./loudness-inspector";
 
 export const metadata: Metadata = {
   title: "Podcast Loudness Checker — Free LUFS & True Peak Analysis | Saltwaves",
@@ -74,20 +75,15 @@ export default function PodcastLoudnessCheckerPage() {
 
       <section className="border-t border-white/10 px-6 pb-20 sm:px-10 lg:px-20">
         <div className="mx-auto max-w-5xl">
-          <div className="border border-[#ff6200]/25 bg-[#222018] p-8 sm:p-10">
-            <h2 className="text-2xl font-semibold tracking-tight text-[#ff6200] sm:text-3xl">
-              The analyzer launches in August.
+          <LoudnessInspector />
+
+          <div className="mt-10 border border-[#f1ede8]/12 bg-[#222018] p-8 sm:p-10">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Get the one-page spec sheet
             </h2>
-            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#f1ede8]/85">
-              Drop in your episode and get Integrated LUFS, True Peak, and dynamic
-              range — measured locally in your browser, nothing uploaded. But numbers
-              alone don&apos;t tell you what&apos;s wrong. This tool reads them the way a
-              broadcast engineer would: what the problem is, why it matters, and what
-              it sounds like to your listeners.
-            </p>
-            <p className="mt-5 max-w-3xl text-base leading-relaxed text-[#f1ede8]/75">
-              Get the one-page podcast loudness spec sheet — every platform target on
-              a single page, plus a note when the analyzer goes live.
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#f1ede8]/75">
+              Every platform target on a single page, plus a note when the next
+              Saltwaves tool goes live. No newsletter, no schedule.
             </p>
             <SignupForm
               submitLabel="Send me the spec sheet"
