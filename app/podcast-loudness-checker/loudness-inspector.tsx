@@ -179,7 +179,7 @@ export default function LoudnessInspector() {
               {
                 label: "Loudness range",
                 value: fmt(result.lra, " LU"),
-                note: "spoken word 5–11",
+                note: "spoken word around 5",
               },
               {
                 label: "Peak to loudness",

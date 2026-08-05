@@ -76,7 +76,7 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
   if (loudOk && peakOk) {
     return {
       pass: true,
-      headline: `Ready for ${p.label}.`,
+      headline: "Ready to publish.",
       detail:
         `Integrated loudness sits within ${p.tolerance.toFixed(0)} LU of the ` +
         `target and true peaks stay under the ceiling. Nothing here needs ` +
@@ -87,10 +87,9 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
   if (!peakOk && !loudOk) {
     return {
       pass: false,
-      headline: `Not ready for ${p.label}.`,
+      headline: "Not ready to publish.",
       detail:
-        `Loudness sits ${Math.abs(delta).toFixed(1)} LU ` +
-        `${delta > 0 ? "above" : "below"} target and true peaks reach ` +
+        `This is ${Math.abs(delta).toFixed(1)} LU too ${delta > 0 ? "loud" : "quiet"}, and true peaks reach ` +
         `${r.truePeakDb.toFixed(1)} dBTP against a ` +
         `${p.ceiling.toFixed(1)} dBTP ceiling. Fix the peaks first — level ` +
         `is a knob, clipping is damage.`,
