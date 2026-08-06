@@ -81,7 +81,7 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
   }
   const delta = r.integratedLufs - p.target;
   const loudOk = Math.abs(delta) <= p.tolerance;
-  const peakOk = r.truePeakDb <= p.ceiling;
+  const peakOk = r.truePeakDb <= p.ceiling + 0.5;
 
   if (loudOk && peakOk) {
     return {
@@ -166,7 +166,7 @@ export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
     });
   }
 
-  if (overPeak > 0) {
+  if (overPeak > 0.5) {
     out.push({
       id: "truepeak",
       title: `True peak is ${overPeak.toFixed(1)} dB over the ceiling`,
