@@ -69,6 +69,16 @@ export interface Diagnosis {
 }
 
 export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
+  if (!isFinite(r.integratedLufs)) {
+    return {
+      pass: false,
+      headline: "No measurable audio in this file.",
+      detail:
+        "Every part of the file sits below the gate the standard uses, so " +
+        "there is nothing to measure. That usually means silence, a muted " +
+        "track, or an export that did not capture the audio.",
+    };
+  }
   const delta = r.integratedLufs - p.target;
   const loudOk = Math.abs(delta) <= p.tolerance;
   const peakOk = r.truePeakDb <= p.ceiling;
@@ -123,6 +133,20 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
 }
 
 export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
+  if (!isFinite(r.integratedLufs)) {
+    return [
+      {
+        id: "silent",
+        title: "The file is silent, or close enough to it",
+        body:
+          "Loudness, loudness range and peak to loudness all need audible " +
+          "material to mean anything, so they are left blank rather than " +
+          "shown as zero.",
+        fix: "Check that the right track was exported and that nothing was muted or soloed at the time.",
+        weight: 200,
+      },
+    ];
+  }
   const out: Diagnosis[] = [];
   const delta = r.integratedLufs - p.target;
   const overPeak = r.truePeakDb - p.ceiling;
