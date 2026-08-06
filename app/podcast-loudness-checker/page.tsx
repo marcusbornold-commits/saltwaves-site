@@ -27,6 +27,16 @@ const platformTargets = [
     truePeak: "−1 dBTP",
   },
   {
+    platform: "Audiobook (ACX / Audible)",
+    loudness: "−23 to −18 LUFS",
+    truePeak: "−3 dBTP",
+  },
+  {
+    platform: "Broadcast EU (EBU R128)",
+    loudness: "−23 LUFS",
+    truePeak: "−1 dBTP",
+  },
+  {
     platform: "Broadcast TV (ATSC A/85)",
     loudness: "−24 LKFS",
     truePeak: "−2 dBTP",
@@ -132,6 +142,11 @@ export default function PodcastLoudnessCheckerPage() {
           </div>
           <p className="mt-4 text-sm text-[#f1ede8]/60">
             LUFS and LKFS are the same measurement (ITU-R BS.1770) under two names.
+          </p>
+          <p className="mt-2 text-sm text-[#f1ede8]/60">
+            Sources: Apple Podcasts audio requirements, Spotify loudness
+            normalization, YouTube loudness normalization, EBU R128, ATSC A/85,
+            and ACX submission requirements. Checked August 2026.
           </p>
         </div>
       </section>
