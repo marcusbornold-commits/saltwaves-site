@@ -224,6 +224,27 @@ export default function LoudnessInspector() {
             </div>
           )}
 
+          <div className="mt-8 rounded-xl border border-[#f1ede8]/12 bg-[#1a1a1a] p-5">
+            <p className="font-semibold text-[#ff6200]">
+              {verdict.pass
+                ? "This one is ready to publish."
+                : "Rather not chase this every episode?"}
+            </p>
+            <p className="mt-2 leading-relaxed text-[#f1ede8]/80">
+              {verdict.pass
+                ? "You clearly know what you are doing. PodMaster does the same pass automatically, so the next forty episodes land here without you checking. No account needed to try it."
+                : "PodMaster runs the same broadcast chain this checker measures against, so level, peaks and range land on spec without the back and forth. No account needed to try it."}
+            </p>
+            <a
+              href="https://app.saltwaves.studio/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-[#ff6200] underline-offset-2 hover:underline"
+            >
+              Run a file through PodMaster
+            </a>
+          </div>
+
           <p className="mt-8 text-xs leading-relaxed text-[#f1ede8]/45">
             {(result.durationSec / 60).toFixed(1)} min analyzed. Measurements
             follow ITU-R BS.1770-4, K-weighted and gated, with true peak
