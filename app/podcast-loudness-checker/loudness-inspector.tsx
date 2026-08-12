@@ -243,6 +243,12 @@ export default function LoudnessInspector() {
             >
               Run a file through PodMaster
             </a>
+            <a
+              href="mailto:marcus@saltwaves.studio"
+              className="mt-2 block text-sm text-[#f1ede8]/45 underline-offset-2 hover:underline"
+            >
+              Volume or producers — talk to us
+            </a>
           </div>
 
           <p className="mt-8 text-xs leading-relaxed text-[#f1ede8]/45">
