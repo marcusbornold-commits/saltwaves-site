@@ -249,6 +249,14 @@ export default function LoudnessInspector() {
             >
               Volume or producers — talk to us
             </a>
+            <a
+              href="https://app.saltwaves.studio/founding"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1.5 block text-xs text-[#f1ede8]/35 underline-offset-2 hover:underline"
+            >
+              20 lifetime-platser till Creator. Sen är det årspris.
+            </a>
           </div>
 
           <p className="mt-8 text-xs leading-relaxed text-[#f1ede8]/45">
