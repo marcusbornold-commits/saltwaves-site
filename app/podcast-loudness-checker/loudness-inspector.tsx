@@ -249,7 +249,7 @@ export default function LoudnessInspector() {
               rel="noopener noreferrer"
               className="mt-1.5 block text-xs text-[#f1ede8]/35 underline-offset-2 hover:underline"
             >
-              20 lifetime-platser till Creator. Sen är det årspris.
+              20 lifetime Creator spots. Then it’s yearly.
             </a>
           </div>
 
