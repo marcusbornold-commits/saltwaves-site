@@ -244,18 +244,31 @@ export default function LoudnessInspector() {
               Run a file through PodMaster
             </a>
             <a
-              href="mailto:marcus@saltwaves.studio"
-              className="mt-2 block text-sm text-[#f1ede8]/45 underline-offset-2 hover:underline"
-            >
-              Volume or producers — talk to us
-            </a>
-            <a
               href="https://app.saltwaves.studio/founding"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1.5 block text-xs text-[#f1ede8]/35 underline-offset-2 hover:underline"
             >
               20 lifetime-platser till Creator. Sen är det årspris.
+            </a>
+          </div>
+
+          <div
+            className={
+              target === "podcast"
+                ? "mt-3 rounded-lg border border-[#f1ede8]/08 px-4 py-2.5"
+                : "mt-3 rounded-lg border border-[#f1ede8]/18 px-4 py-3"
+            }
+          >
+            <a
+              href="mailto:marcus@saltwaves.studio"
+              className={
+                target === "podcast"
+                  ? "block text-xs text-[#f1ede8]/40 underline-offset-2 hover:underline"
+                  : "block text-sm text-[#f1ede8]/65 underline-offset-2 hover:underline"
+              }
+            >
+              Volume or producers — talk to us
             </a>
           </div>
 
