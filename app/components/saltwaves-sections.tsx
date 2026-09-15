@@ -1,0 +1,531 @@
+"use client";
+// saltwaves-sections.jsx — nav, demo, how-it-works, credibility, pricing, footer
+import React from "react";
+import type { PriceIds } from "@/lib/pricing";
+import SubscriptionCheckoutButton from "./subscription-checkout-button";
+import { Wordmark, WaveBars, VUMeter, demoAudio } from "./saltwaves-ui";
+
+const navItems = [
+  { href: "/#demo", label: "Hear it" },
+  { href: "/services", label: "Post-production" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/founding", label: "Founding", highlight: true },
+];
+
+export function Nav({ dark, isLoggedIn = false }: { dark?: boolean; isLoggedIn?: boolean }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const accountHref = isLoggedIn ? "/account" : "/login";
+  const accountLabel = isLoggedIn ? "Account" : "Log in";
+
+  return (
+    <header className={"nav" + (dark ? " nav-dark" : "")} data-screen-label="Navbar">
+      <div className="container nav-inner">
+        <Wordmark dark={dark} href="/" />
+        <nav aria-label="Main">
+          <ul className="nav-links">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <a href={item.href} className={item.highlight ? "nav-founding" : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="nav-actions">
+          <a className="btn btn-primary btn-sm" href={accountHref}>{accountLabel}</a>
+          <button
+            type="button"
+            className="nav-menu-toggle"
+            aria-expanded={menuOpen}
+            aria-controls="nav-mobile-menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {menuOpen ? (
+                <>
+                  <path d="M5 5l12 12"></path>
+                  <path d="M17 5L5 17"></path>
+                </>
+              ) : (
+                <>
+                  <path d="M3 6h16"></path>
+                  <path d="M3 11h16"></path>
+                  <path d="M3 16h16"></path>
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+      <nav
+        id="nav-mobile-menu"
+        className={"nav-mobile-menu" + (menuOpen ? " is-open" : "")}
+        aria-label="Mobile"
+        hidden={!menuOpen}
+      >
+        <ul>
+          {navItems.map((item) => (
+            <li key={item.href}>
+              <a
+                href={item.href}
+                className={item.highlight ? "nav-founding" : undefined}
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+          <li>
+            <a className="text-ink hover:text-orange" href={accountHref} onClick={() => setMenuOpen(false)}>{accountLabel}</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+  );
+}
+
+/* ---------- Before / after demo ---------- */
+type DemoCardProps = {
+  kind: "raw" | "mastered";
+  playing: boolean;
+  onToggle: () => void;
+  title?: string;
+  microcopy?: string;
+  tags?: string[];
+  waveColor?: string;
+  light?: boolean;
+};
+
+export function DemoCard({
+  kind,
+  playing,
+  onToggle,
+  title,
+  microcopy,
+  tags,
+  waveColor,
+  light = false,
+}: DemoCardProps) {
+  const mastered = kind === "mastered";
+  const resolvedTitle = title ?? (mastered ? "After — PodMaster" : "Before — raw recording");
+  const resolvedMicro = microcopy ?? (mastered ? "one pass, 60 seconds" : "straight off the mic");
+  const resolvedTags =
+    tags ??
+    (mastered
+      ? ["noise removed", "EQ balanced", "-16 LUFS"]
+      : ["room noise", "uneven levels", "-31 LUFS"]);
+  const resolvedWave =
+    waveColor ??
+    (mastered
+      ? "var(--orange)"
+      : light
+        ? "rgba(26,26,26,0.35)"
+        : "rgba(241,237,232,0.45)");
+
+  return (
+    <article
+      className={
+        "demo-card" +
+        (mastered ? " is-mastered" : "") +
+        (light ? " demo-light" : "")
+      }
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 22 }}>
+        <button
+          className={"play-btn " + (mastered ? "play-mastered" : "play-raw")}
+          onClick={onToggle}
+          aria-label={(playing ? "Stop" : "Play") + " " + (mastered ? "mastered" : "raw") + " demo clip"}
+        >
+          {playing ? (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="3" width="4.5" height="12" rx="1"></rect>
+              <rect x="10.5" y="3" width="4.5" height="12" rx="1"></rect>
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M4.5 2.8v12.4c0 .8.9 1.3 1.6.9l10-6.2c.7-.4.7-1.4 0-1.8l-10-6.2c-.7-.4-1.6.1-1.6.9z"></path>
+            </svg>
+          )}
+        </button>
+        <div>
+          <h3 style={{ fontSize: 21 }}>{resolvedTitle}</h3>
+          <span className="microcopy">{resolvedMicro}</span>
+        </div>
+      </div>
+      <WaveBars
+        n={56}
+        seed={mastered ? 4.1 : 8.6}
+        height={64}
+        playing={playing}
+        flat={mastered ? 1 : 0.45}
+        color={resolvedWave}
+      />
+      {resolvedTags.length > 0 && (
+        <div className="demo-tags">
+          {resolvedTags.map((t) => (
+            <span className="demo-tag" key={t}>{t}</span>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+export function DemoSection() {
+  const [playing, setPlaying] = React.useState<any>(null); // null | 'raw' | 'mastered'
+  const toggle = (kind: any) => {
+    if (playing === kind) {
+      demoAudio.stop();
+      setPlaying(null);
+    } else {
+      demoAudio.play(kind, () => setPlaying(null));
+      setPlaying(kind);
+    }
+  };
+  React.useEffect(() => () => demoAudio.stop(), []);
+  return (
+    <section className="band band-dark" id="demo" data-screen-label="Before/After demo">
+      <div className="container">
+        <div className="reveal">
+          <div className="kicker">Same file. 60 seconds apart.</div>
+          <h2 className="section-title">Hear the difference.</h2>
+          <p className="section-sub">No upload required — just press play.</p>
+        </div>
+        <div className="demo-grid">
+          <div className="reveal reveal-d1"><DemoCard kind="raw" playing={playing === "raw"} onToggle={() => toggle("raw")} /></div>
+          <div className="reveal reveal-d2"><DemoCard kind="mastered" playing={playing === "mastered"} onToggle={() => toggle("mastered")} /></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- How it works ---------- */
+function StepIcon({ kind }: any) {
+  const common: any = { width: 40, height: 40, viewBox: "0 0 40 40", fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (kind === "upload")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M20 27V8"></path>
+        <path d="M12 16l8-8 8 8"></path>
+        <path d="M7 33h26"></path>
+      </svg>
+    );
+  if (kind === "process")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M8 12h24"></path><circle cx="16" cy="12" r="3.5" fill="var(--paper)"></circle>
+        <path d="M8 20h24"></path><circle cx="26" cy="20" r="3.5" fill="var(--paper)"></circle>
+        <path d="M8 28h24"></path><circle cx="13" cy="28" r="3.5" fill="var(--paper)"></circle>
+      </svg>
+    );
+  return (
+    <svg {...common} aria-hidden="true">
+      <path d="M20 8v19"></path>
+      <path d="M12 19l8 8 8-8"></path>
+      <path d="M7 33h26"></path>
+    </svg>
+  );
+}
+
+export function HowItWorks() {
+  const steps = [
+    { icon: "upload", title: "Upload", body: "Drop your episode export — .wav or .mp3, any length." },
+    { icon: "process", title: "Processing", body: "Noise reduction, EQ balance, loudness to broadcast spec." },
+    { icon: "download", title: "Download", body: "Broadcast-ready audio in your inbox." },
+  ];
+  return (
+    <section className="band" id="how" data-screen-label="How it works">
+      <div className="container">
+        <div className="reveal">
+          <div className="kicker">How it works</div>
+          <h2 className="section-title">Three steps. No session files.</h2>
+        </div>
+        <div className="steps-grid">
+          {steps.map((s, i) => (
+            <article className={"step-card reveal reveal-d" + (i + 1)} key={s.title}>
+              <div className="step-num">0{i + 1}</div>
+              <div className="step-icon"><StepIcon kind={s.icon} /></div>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Credibility + testimonials ---------- */
+const TESTIMONIALS = [
+  { quote: "Saltwaves is a really smooth tool that makes a clear difference right away. Excited to follow where this goes!", who: "Jonatan Samuelsson · Adora, Narnia", avatar: "/testimonials/jonatan.jpg", alt: "Jonatan Samuelsson" },
+];
+
+export function Credibility() {
+  return (
+    <section className="band band-dark" id="about" data-screen-label="Credibility">
+      <div className="container">
+        <div className="reveal" style={{ display: "grid", gridTemplateColumns: "minmax(0, 8fr) minmax(0, 4fr)", gap: "clamp(32px, 5vw, 64px)", alignItems: "center" }} data-cred-grid="true">
+          <div>
+            <p className="cred-quote">
+              Built by a sound engineer with 20 years behind the console — <em>not scraped data.</em>
+            </p>
+            <p className="section-sub" style={{ marginTop: 22 }}>
+              Live sound. Broadcast. TV. Streaming. That experience is baked into every decision the chain makes.
+            </p>
+            <div className="cred-meta">
+              <span className="cred-chip">FOH · live sound</span>
+              <span className="cred-chip">Broadcast</span>
+              <span className="cred-chip">TV post</span>
+              <span className="cred-chip">Streaming</span>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 14, justifyContent: "start" }}>
+            <VUMeter lit={11} total={16} />
+            <VUMeter lit={8} total={16} />
+            <VUMeter lit={13} total={16} />
+          </div>
+        </div>
+        <div
+          className="testi-grid"
+          data-status="hidden"
+          style={{ gridTemplateColumns: "1fr", justifyItems: "center" }}
+        >
+          {TESTIMONIALS.map((t, i) => (
+            <article
+              className={"testi-card reveal reveal-d" + (i + 1)}
+              key={i}
+              style={{ maxWidth: 480, width: "100%" }}
+            >
+              <p className="testi-quote">“{t.quote}”</p>
+              <div className="testi-who">
+                {t.avatar ? (
+                  <img className="testi-avatar" src={t.avatar} alt={t.alt} />
+                ) : (
+                  <span className="testi-avatar">IMG</span>
+                )}
+                <span className="microcopy">{t.who}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+      <style>{`@media (max-width: 760px) { section[data-screen-label="Credibility"] [data-cred-grid] { grid-template-columns: 1fr !important; } }`}</style>
+    </section>
+  );
+}
+
+/* ---------- Pricing ---------- */
+/* Static locale → currency mapping via navigator.language.
+   No API calls — replace with Stripe's currency handling post-launch. */
+const PRICE_TABLE: any = {
+  SEK: { free: "0 kr", creator: ["199 kr", "1 990 kr"], studio: ["399 kr", "3 990 kr"] },
+  NOK: { free: "0 kr", creator: ["219 kr", "2 190 kr"], studio: ["429 kr", "4 290 kr"] },
+  DKK: { free: "0 kr", creator: ["139 kr", "1 390 kr"], studio: ["279 kr", "2 790 kr"] },
+  EUR: { free: "€0", creator: ["€18", "€179"], studio: ["€36", "€359"] },
+  USD: { free: "$0", creator: ["$19", "$190"], studio: ["$39", "$390"] },
+};
+const EU_LANGS = ["de", "fr", "es", "it", "nl", "pl", "fi", "pt", "el", "cs", "sk", "sl", "hr", "hu", "ro", "bg", "et", "lv", "lt", "mt", "ga"];
+
+function detectCurrency() {
+  const lang = (navigator.language || "en").toLowerCase().split("-")[0];
+  if (lang === "sv") return "SEK";                                   // Sweden
+  if (lang === "nb" || lang === "nn" || lang === "no") return "NOK"; // Norway
+  if (lang === "da") return "DKK";                                   // Denmark
+  if (EU_LANGS.includes(lang)) return "EUR";                         // EU incl. Finland
+  return "USD";                                                      // everyone else incl. Iceland
+}
+
+export function Pricing({
+  currency,
+  isLoggedIn,
+  priceIds,
+}: {
+  currency?: string;
+  isLoggedIn: boolean;
+  priceIds: PriceIds;
+}) {
+  const [annual, setAnnual] = React.useState(true);
+  // navigator is unavailable during server rendering, so resolve after mount
+  const [cur, setCur] = React.useState("USD");
+  React.useEffect(() => {
+    setCur(currency && currency !== "Auto" ? currency : detectCurrency());
+  }, [currency]);
+  const p = PRICE_TABLE[cur] || PRICE_TABLE.USD;
+  const billing = annual ? "annual" : "monthly";
+  const tiers: any[] = [
+    {
+      name: "Free", m: p.free, y: p.free, per: "forever", badge: "No credit card required",
+      items: ["Full quality, no watermark", "2 hours of processing a month", "Email delivery", "No account needed"],
+      cta: "Start free",
+    },
+    {
+      name: "Creator", id: "creator" as const, m: p.creator[0], y: p.creator[1], featured: true, badge: "Most popular",
+      items: ["10 hours of processing per month", "Priority processing"],
+      cta: "Get Creator",
+    },
+    {
+      name: "Studio", id: "studio" as const, m: p.studio[0], y: p.studio[1],
+      items: ["30 hours of processing per month", "Everything in Creator", { label: "Batch processing", soon: true }],
+      cta: "Get Studio",
+    },
+  ];
+  return (
+    <section className="band" id="pricing" data-screen-label="Pricing">
+      <div className="container">
+        <div className="pricing-head reveal">
+          <div>
+            <div className="kicker">Pricing</div>
+            <h2 className="section-title" style={{ marginBottom: 0 }}>Start free. Upgrade when your show does.</h2>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div className="bill-toggle" role="group" aria-label="Billing period">
+              <button className={annual ? "" : "on"} onClick={() => setAnnual(false)}>Monthly</button>
+              <button className={annual ? "on" : ""} onClick={() => setAnnual(true)}>Annual</button>
+            </div>
+            <span className="save-pill">save 2 months</span>
+          </div>
+        </div>
+        <a href="/founding" className="founding-pricing-banner reveal">
+          Founding — lifetime access to Creator, limited to 20 seats
+        </a>
+        <div className="pricing-grid">
+          {tiers.map((t, i) => (
+            <article className={"price-card reveal reveal-d" + (i + 1) + (t.featured ? " featured" : "")} key={t.name}>
+              {t.badge && <span className="price-badge">{t.badge}</span>}
+              <h3 className="price-name">{t.name}</h3>
+              <div className="price-amount">
+                {annual ? t.y : t.m}{" "}
+                <small>{t.per ? t.per : annual ? "/year" : "/month"}</small>
+              </div>
+              <ul className="price-list">
+                {t.items.map((it: any) => {
+                  const soon = typeof it === "object" && it.soon;
+                  const label = typeof it === "object" ? it.label : it;
+                  return (
+                    <li key={label} className={soon ? "soon" : ""}>
+                      {label}
+                      {soon && <span className="soon-badge">soon</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+              {t.id === "creator" || t.id === "studio" ? (
+                <SubscriptionCheckoutButton
+                  plan={t.id}
+                  billing={billing}
+                  priceIds={priceIds}
+                  isLoggedIn={isLoggedIn}
+                  loginCallbackUrl="/"
+                  className={"btn " + (t.featured ? "btn-primary" : "btn-ghost")}
+                >
+                  {t.cta}
+                </SubscriptionCheckoutButton>
+              ) : (
+                <a className={"btn " + (t.featured ? "btn-primary" : "btn-ghost")} href="#try" style={{ justifyContent: "center" }}>{t.cta}</a>
+              )}
+            </article>
+          ))}
+        </div>
+        <p className="microcopy reveal" style={{ marginTop: 24 }}>
+          prices in {cur} · based on your browser language
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Footer ---------- */
+function SocialIcon({ kind }: any) {
+  const common: any = { width: 17, height: 17, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (kind === "linkedin")
+    return (
+      <svg {...common} aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+        <path d="M8 11v5"></path>
+        <path d="M8 8v.01"></path>
+        <path d="M12 16v-5"></path>
+        <path d="M16 16v-3a2 2 0 0 0-4 0"></path>
+      </svg>
+    );
+  if (kind === "youtube")
+    return (
+      <svg {...common} aria-hidden="true">
+        <rect x="3" y="6" width="18" height="13" rx="3.5"></rect>
+        <path d="M10 9.5l5 3-5 3z" fill="currentColor" stroke="none"></path>
+      </svg>
+    );
+  return (
+    <svg {...common} aria-hidden="true">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+      <circle cx="12" cy="12" r="3.8"></circle>
+      <path d="M17 7v.01"></path>
+    </svg>
+  );
+}
+
+export function Footer({ omitFounding = false, b2b = false }: { omitFounding?: boolean; b2b?: boolean } = {}) {
+  return (
+    <footer className="footer" data-screen-label="Footer">
+      <div className="container">
+        <div className="footer-inner">
+          <div>
+            <img src="/assets/logo-full.png" alt="Saltwaves.studio" />
+            <p className="microcopy" style={{ marginTop: 18, maxWidth: "32ch" }}>
+              Broadcast-trained processing. Built by an engineer&apos;s ears.
+            </p>
+            <div className="footer-social">
+              <a href="https://www.linkedin.com/in/marcus-bornold-9152a3407/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><SocialIcon kind="linkedin" /></a>
+              {!b2b && (
+                <>
+                  <a href="https://www.youtube.com/@saltwavestudio" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><SocialIcon kind="youtube" /></a>
+                  <a href="https://www.instagram.com/podmaster.studio/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><SocialIcon kind="instagram" /></a>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="footer-cols">
+            {!b2b && (
+              <div className="footer-col">
+                <h4>Tools</h4>
+                <ul>
+                  <li><a href="/#try">PodMaster</a></li>
+                  <li><a href="/blog">Blog</a></li>
+                  <li><a href="https://saltwaves.studio/promptermaster">PrompterMaster</a></li>
+                  <li><a href="https://saltwaves.studio/podcast-loudness-checker">Loudness Inspector</a></li>
+                </ul>
+              </div>
+            )}
+            <div className="footer-col">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="/#about">About</a></li>
+                {!omitFounding && (
+                  <li><a href="/founding">Founding</a></li>
+                )}
+                {!b2b && (
+                  <li><a href="/services">Post-production</a></li>
+                )}
+                <li><a href={b2b ? "mailto:marcus@saltwaves.studio" : "mailto:hello@saltwaves.studio"}>Contact</a></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="/privacy">Privacy Policy</a></li>
+                <li><a href="/terms">Terms of Service</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="footer-base microcopy">
+          <span>© 2026 Saltwaves Studio · Marcus Bornold · F-skatt · Örebro, Sweden</span>
+          <span>Mastered, not generated.</span>
+        </div>
+      </div>
+    </footer>
+  );
+}

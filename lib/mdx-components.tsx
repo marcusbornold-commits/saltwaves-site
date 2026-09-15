@@ -1,5 +1,5 @@
 import type { MDXComponents } from "mdx/types";
-import BlogABPlayer from "@/app/components/blog-ab-player";
+import BlogABPlayer from "@/app/(public-tools)/components/blog-ab-player";
 
 export const mdxComponents: MDXComponents = {
   ABPlayer: BlogABPlayer,

@@ -21,8 +21,8 @@ const str = (v: unknown, max = 64): string | null =>
   typeof v === "string" ? v.slice(0, max) : null;
 
 export async function POST(request: Request) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.INSPECTOR_SUPABASE_URL;
+  const key = process.env.INSPECTOR_SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     console.error("[inspector] missing supabase env");
     return NextResponse.json({ ok: true });

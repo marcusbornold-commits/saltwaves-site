@@ -1,46 +1,25 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Archivo_Black, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-const archivoBlack = Archivo_Black({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-archivo",
-});
-
 const spaceGrotesk = Space_Grotesk({
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-space",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saltwaves.studio"),
-  title: "Saltwaves Studio",
-  description: "Professional audio tools for creators.",
+  title: "PodMaster by Saltwaves.studio – Broadcast-Grade Podcast Mastering",
+  description:
+    "Master your podcast in 60 seconds. PodMaster cleans noise, balances EQ and matches loudness to broadcast spec — a processing chain built on 20 years behind the console. Free, no account needed.",
+  keywords:
+    "podcast mastering, broadcast podcast mastering, podcast loudness, noise reduction, audio mastering online",
   openGraph: {
-    title: "Saltwaves Studio",
-    description: "Professional audio tools for creators.",
+    title: "PodMaster by Saltwaves.studio – Broadcast-Grade Podcast Mastering",
+    description:
+      "Drop in your episode, get broadcast-ready audio back. Free to try, no account needed.",
     type: "website",
-    url: "https://saltwaves.studio",
-    siteName: "Saltwaves Studio",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Saltwaves Studio",
-    description: "Professional audio tools for creators.",
   },
 };
 
@@ -51,11 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${archivoBlack.variable} ${spaceGrotesk.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={spaceGrotesk.className}>{children}</body>
     </html>
   );
 }

@@ -1,0 +1,1555 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { decodeArrayBufferTo48k, analyzeChannels, type AnalysisResult } from "@/lib/audio-analysis";
+import {
+  ABA_CSS,
+  AbAnalysisResults,
+  decodeAnalysisError,
+} from "../ab-analyzer/ab-analysis-ui";
+
+const API = "http://127.0.0.1:8766";
+// Bumpa denna när runner.py:s version bumpas.
+const EXPECTED_RUNNER_VERSION = "6-jobs-dir";
+const HEALTH_POLL_MS = 5000;
+
+type HealthInfo = {
+  ok: boolean;
+  pid: number;
+  version: string;
+  started: string;
+};
+
+type RunnerStatus = "checking" | "up" | "down";
+
+function isNetworkFetchError(e: unknown): boolean {
+  return e instanceof TypeError && e.message === "Failed to fetch";
+}
+
+function formatStarted(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString("sv-SE");
+  } catch {
+    return iso;
+  }
+}
+
+/** Upward process timer: mm:ss, or h:mm:ss once past an hour. */
+function fmtMeasure(value: number | null, digits = 1): string {
+  if (value == null || !Number.isFinite(value)) return "n/a";
+  return value.toFixed(digits);
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const mm = m.toString().padStart(2, "0");
+  const ss = sec.toString().padStart(2, "0");
+  if (h > 0) return `${h}:${mm}:${ss}`;
+  return `${mm}:${ss}`;
+}
+
+type Mode = "mild" | "standard" | "strong";
+type MicType = "dynamic" | "condenser" | "headset" | "unknown";
+type TalkMic = "dynamic" | "condenser" | "headset";
+type WorkMode = "single" | "multi";
+
+type PreflightFile = {
+  filename: string;
+  duration: number;
+  sample_rate: number;
+  channels: number;
+  integrated_lufs: number | null;
+  true_peak: number | null;
+  room: boolean;
+};
+
+type JobFolder = {
+  name: string;
+  wav_count: number;
+};
+
+type SpecEntry = {
+  label: string;
+  lufs: number;
+  dbtp: number;
+  brusgolv: number;
+  /** Half-width LUFS tolerance; defaults to 0.5 when omitted. */
+  lufsTol?: number;
+};
+
+type SpecsMap = Record<string, SpecEntry>;
+
+type JobPhase =
+  | "idle"
+  | "uploading"
+  | "running"
+  | "analyzing"
+  | "done"
+  | "error";
+
+/** Accept ceiling specs (dBTP, noise floor) if measured ≤ limit + this. */
+const CEILING_EPS = 0.05;
+const DEFAULT_LUFS_TOL = 0.5;
+
+type ReportLocale = "en" | "sv";
+
+const REPORT_COPY = {
+  en: {
+    title: "Delivery report",
+    file: "File",
+    date: "Date",
+    spec: "Target spec",
+    parameter: "Parameter",
+    before: "Before",
+    after: "After",
+    requirement: "Requirement",
+    result: "Result",
+    noiseFloor: "Noise floor",
+    snr: "Signal/noise",
+    methodology:
+      "Methodology: ITU-R BS.1770-4 (K-weighted, gated) · true peak 4× oversampled · LTAS Hann 4096 / 50 % overlap, RMS-gated median −15 dB. Spectral / LTAS figures are relative to the 250 Hz – 4 kHz speech core (reference shift / normalisation, not a boost). Read 9k+ with care on lossy sources.",
+    note: "The noise floor is measured as an absolute level and rises when the file is lifted. Signal/noise is the figure that describes the processing.",
+    processed: "Processed on own hardware inside the EU",
+    location: "Örebro, Sweden",
+    reportSuffix: "delivery-report",
+  },
+  sv: {
+    title: "Leveransrapport",
+    file: "Fil",
+    date: "Datum",
+    spec: "Målspec",
+    parameter: "Parameter",
+    before: "Före",
+    after: "Efter",
+    requirement: "Krav",
+    result: "Utfall",
+    noiseFloor: "Brusgolv",
+    snr: "Signal/brus",
+    methodology:
+      "Metodik: ITU-R BS.1770-4 (K-viktad, gated) · true peak 4× översamplad · LTAS Hann 4096 / 50 % överlapp, RMS-gated median −15 dB. Spektrala / LTAS-värden är relativa mot talskärnan 250 Hz – 4 kHz (referensförskjutning / normalisering, inte en höjning). Läs 9k+ med försiktighet på lossy källor.",
+    note: "Brusgolvet mäts absolut och stiger när filen lyfts. Signal/brus är det värde som beskriver bearbetningen.",
+    processed: "Bearbetad på egen hårdvara inom EU",
+    location: "Örebro, Sverige",
+    reportSuffix: "leveransrapport",
+  },
+} as const;
+
+const MODES: { value: Mode; label: string }[] = [
+  { value: "mild", label: "mild (80 Hz)" },
+  { value: "standard", label: "standard (90 Hz)" },
+  { value: "strong", label: "strong (100 Hz)" },
+];
+
+const MICS: { value: MicType; label: string }[] = [
+  { value: "dynamic", label: "dynamic" },
+  { value: "condenser", label: "condenser" },
+  { value: "headset", label: "headset" },
+  { value: "unknown", label: "Okänd / auto" },
+];
+
+const TALK_MICS: { value: TalkMic; label: string }[] = [
+  { value: "dynamic", label: "dynamic" },
+  { value: "condenser", label: "condenser" },
+  { value: "headset", label: "headset" },
+];
+
+const REPORT_LOCALES: { value: ReportLocale; label: string }[] = [
+  { value: "sv", label: "Svenska" },
+  { value: "en", label: "English" },
+];
+
+function lufsTolerance(spec: SpecEntry): number {
+  return spec.lufsTol ?? DEFAULT_LUFS_TOL;
+}
+
+/** Ceiling check: measured must be ≤ limit (boundary OK) + float epsilon. */
+function passesCeiling(measured: number, limit: number): boolean {
+  return isFinite(measured) && measured <= limit + CEILING_EPS;
+}
+
+/** Symmetric LUFS window around target (not a strict inequality). */
+function passesLufs(measured: number, target: number, tol: number): boolean {
+  return isFinite(measured) && Math.abs(measured - target) <= tol;
+}
+
+function formatDecimal(
+  value: number,
+  digits: number,
+  locale: ReportLocale,
+): string {
+  const raw = value.toFixed(digits);
+  return locale === "sv" ? raw.replace(".", ",") : raw;
+}
+
+function fmtLocale(
+  v: number | null | undefined,
+  unit: string,
+  locale: ReportLocale,
+  digits = 1,
+): string {
+  if (v == null || !isFinite(v)) return "–";
+  return `${formatDecimal(v, digits, locale)}${unit}`;
+}
+
+function formatSignedDeltaDb(v: number, locale: ReportLocale): string {
+  const sign = v >= 0 ? "+" : "";
+  return `${sign}${formatDecimal(v, 1, locale)} dB`;
+}
+
+function snrDb(lufs: number, noiseDb: number | null): number | null {
+  if (noiseDb == null || !isFinite(lufs) || !isFinite(noiseDb)) return null;
+  return lufs - noiseDb;
+}
+
+type SpecRowStatus = "pass" | "fail" | "n/a";
+
+type SpecEvalRow = {
+  parameter: string;
+  before: string;
+  after: string;
+  requirement: string;
+  status: SpecRowStatus;
+  /** When set, shown in the result column instead of PASS/FAIL. */
+  outcome?: string;
+};
+
+function evaluateSpecRows(
+  spec: SpecEntry,
+  before: AnalysisResult,
+  after: AnalysisResult,
+  beforeNoiseDb: number | null,
+  afterNoiseDb: number,
+  locale: ReportLocale = "en",
+): SpecEvalRow[] {
+  const copy = REPORT_COPY[locale];
+  const tol = lufsTolerance(spec);
+  const lufsOk = passesLufs(after.integratedLufs, spec.lufs, tol);
+  const dbtpOk = passesCeiling(after.truePeakDb, spec.dbtp);
+  const brusOk = passesCeiling(afterNoiseDb, spec.brusgolv);
+  const beforeSnr = snrDb(before.integratedLufs, beforeNoiseDb);
+  const afterSnr = snrDb(after.integratedLufs, afterNoiseDb);
+  const snrDelta =
+    beforeSnr != null && afterSnr != null ? afterSnr - beforeSnr : null;
+
+  return [
+    {
+      parameter: "LUFS",
+      before: fmtLocale(before.integratedLufs, " LUFS", locale),
+      after: fmtLocale(after.integratedLufs, " LUFS", locale),
+      requirement: `${formatDecimal(spec.lufs, 1, locale)} ± ${formatDecimal(tol, 1, locale)} LUFS`,
+      status: lufsOk ? "pass" : "fail",
+    },
+    {
+      parameter: "dBTP",
+      before: fmtLocale(before.truePeakDb, " dBTP", locale),
+      after: fmtLocale(after.truePeakDb, " dBTP", locale),
+      requirement: `≤ ${formatDecimal(spec.dbtp, 1, locale)} dBTP`,
+      status: dbtpOk ? "pass" : "fail",
+    },
+    {
+      parameter: "LRA",
+      before: fmtLocale(before.lra, " LU", locale),
+      after: fmtLocale(after.lra, " LU", locale),
+      requirement: "—",
+      status: "n/a",
+    },
+    {
+      parameter: "PLR",
+      before: fmtLocale(before.plr, " dB", locale),
+      after: fmtLocale(after.plr, " dB", locale),
+      requirement: "—",
+      status: "n/a",
+    },
+    {
+      parameter: copy.noiseFloor,
+      before: fmtLocale(beforeNoiseDb, " dBFS", locale, 0),
+      after: fmtLocale(afterNoiseDb, " dBFS", locale, 0),
+      requirement: `≤ ${formatDecimal(spec.brusgolv, 0, locale)} dBFS`,
+      status: brusOk ? "pass" : "fail",
+    },
+    {
+      parameter: copy.snr,
+      before: fmtLocale(beforeSnr, " dB", locale),
+      after: fmtLocale(afterSnr, " dB", locale),
+      requirement: "—",
+      status: "n/a",
+      outcome:
+        snrDelta == null ? "—" : formatSignedDeltaDb(snrDelta, locale),
+    },
+  ];
+}
+
+function statusLabelSv(status: SpecRowStatus): string {
+  if (status === "pass") return "OK";
+  if (status === "fail") return "UTANFÖR";
+  return "—";
+}
+
+function statusLabelEn(status: SpecRowStatus): string {
+  if (status === "pass") return "PASS";
+  if (status === "fail") return "OUT OF SPEC";
+  return "—";
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function deliveryReportBasename(
+  originalName: string,
+  locale: ReportLocale,
+): string {
+  const base = originalName.replace(/\.[^.]+$/, "") || "master";
+  return `${base}_${REPORT_COPY[locale].reportSuffix}.html`;
+}
+
+function reportDateLabel(locale: ReportLocale): string {
+  return new Date().toLocaleString(locale === "sv" ? "sv-SE" : "en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function buildDeliveryReportHtml(opts: {
+  filename: string;
+  dateLabel: string;
+  specLabel: string;
+  rows: SpecEvalRow[];
+  locale: ReportLocale;
+  methodology?: string;
+  measurementOnly?: boolean;
+}): string {
+  const copy = REPORT_COPY[opts.locale];
+  const statusLabel =
+    opts.locale === "sv" ? statusLabelSv : statusLabelEn;
+  const rowHtml = opts.rows
+    .map((row) => {
+      // Signal/noise is informational — never pass/fail, never red.
+      const cls =
+        row.outcome != null
+          ? "na"
+          : row.status === "pass"
+            ? "pass"
+            : row.status === "fail"
+              ? "fail"
+              : "na";
+      const resultText = row.outcome ?? statusLabel(row.status);
+      return `<tr>
+  <td>${escapeHtml(row.parameter)}</td>
+  ${opts.measurementOnly ? "" : `<td>${escapeHtml(row.before)}</td>`}
+  <td>${escapeHtml(row.after)}</td>
+  <td>${escapeHtml(row.requirement)}</td>
+  <td class="status ${cls}">${escapeHtml(resultText)}</td>
+</tr>`;
+    })
+    .join("\n");
+
+  return `<!DOCTYPE html>
+<html lang="${opts.locale}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${escapeHtml(copy.title)} — ${escapeHtml(opts.filename)}</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 48px 56px;
+    font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a1a; background: #fff; line-height: 1.45;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .meta { color: #555; font-size: 14px; margin: 0 0 28px; }
+  .meta strong { color: #1a1a1a; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #ddd; }
+  th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #666; font-weight: 700; }
+  .status { font-weight: 700; letter-spacing: 0.04em; font-size: 12px; }
+  .status.pass { color: #1e6b3a; }
+  .status.fail { color: #b3261e; }
+  .status.na { color: #888; }
+  .note {
+    margin: 16px 0 0;
+    font-size: 12px; color: #555; max-width: 72ch;
+  }
+  .method {
+    margin: 28px 0 0; padding-top: 16px; border-top: 1px solid #ddd;
+    font-size: 12px; color: #555; max-width: 72ch;
+  }
+  footer {
+    margin-top: 36px; padding-top: 16px; border-top: 1px solid #ddd;
+    font-size: 12px; color: #666; line-height: 1.6;
+  }
+  @media print {
+    body { padding: 12mm 14mm; }
+    a { color: inherit; text-decoration: none; }
+    .status.pass, .status.fail { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(copy.title)}</h1>
+  <p class="meta">
+    <strong>${escapeHtml(copy.file)}:</strong> ${escapeHtml(opts.filename)}<br />
+    <strong>${escapeHtml(copy.date)}:</strong> ${escapeHtml(opts.dateLabel)}<br />
+    <strong>${escapeHtml(copy.spec)}:</strong> ${escapeHtml(opts.specLabel)}
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>${escapeHtml(copy.parameter)}</th>
+        ${opts.measurementOnly ? "" : `<th>${escapeHtml(copy.before)}</th>`}
+        <th>${escapeHtml(opts.measurementOnly ? (opts.locale === "sv" ? "Uppmätt" : "Measured") : copy.after)}</th>
+        <th>${escapeHtml(copy.requirement)}</th>
+        <th>${escapeHtml(copy.result)}</th>
+      </tr>
+    </thead>
+    <tbody>
+${rowHtml}
+    </tbody>
+  </table>
+  <p class="note">${escapeHtml(copy.note)}</p>
+  <p class="method">${escapeHtml(opts.methodology ?? copy.methodology)}</p>
+  <footer>
+    Saltwaves Studio · Marcus Bornold · ${escapeHtml(copy.location)} ·
+    <a href="mailto:hello@saltwaves.studio">hello@saltwaves.studio</a><br />
+    ${escapeHtml(copy.processed)}
+  </footer>
+</body>
+</html>`;
+}
+
+function downloadBlob(filename: string, html: string) {
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function estimateNoiseFloorDb(channels: Float32Array[]): number {
+  const mono = new Float64Array(channels[0].length);
+  for (let i = 0; i < mono.length; i++) {
+    let s = 0;
+    for (const ch of channels) s += ch[i];
+    mono[i] = s / channels.length;
+  }
+  const frameSize = 2048;
+  const hop = 512;
+  const rmsValues: number[] = [];
+  for (let off = 0; off + frameSize <= mono.length; off += hop) {
+    let e = 0;
+    for (let i = 0; i < frameSize; i++) e += mono[off + i] * mono[off + i];
+    rmsValues.push(10 * Math.log10(e / frameSize + 1e-20));
+  }
+  if (!rmsValues.length) return NaN;
+  rmsValues.sort((a, b) => a - b);
+  const idx = Math.floor(rmsValues.length * 0.1);
+  return rmsValues[idx];
+}
+
+async function analyzeWithNoiseFloor(
+  audio: ArrayBuffer,
+  onStatus: (s: string) => void,
+): Promise<{ result: AnalysisResult; noiseFloorDb: number }> {
+  onStatus("Decoding…");
+  const channels = await decodeArrayBufferTo48k(audio);
+  const durMin = channels[0].length / 48000 / 60;
+  if (durMin > 30) {
+    onStatus(`Long file (${durMin.toFixed(0)} min) — this can take a while…`);
+  }
+  const result = await analyzeChannels(channels, (stage, frac) =>
+    onStatus(`Analyzing ${stage} ${(frac * 100).toFixed(0)} %`),
+  );
+  return { result, noiseFloorDb: estimateNoiseFloorDb(channels) };
+}
+
+function SpecCompliance({
+  spec,
+  before,
+  after,
+  beforeNoiseFloorDb,
+  noiseFloorDb,
+}: {
+  spec: SpecEntry;
+  before: AnalysisResult;
+  after: AnalysisResult;
+  beforeNoiseFloorDb: number | null;
+  noiseFloorDb: number;
+}) {
+  const rows = evaluateSpecRows(
+    spec,
+    before,
+    after,
+    beforeNoiseFloorDb,
+    noiseFloorDb,
+  ).filter((r) => r.status !== "n/a");
+
+  return (
+    <section className="lr-spec" aria-label="Spec compliance">
+      <h2 className="aba-h2">Spec — {spec.label}</h2>
+      <div className="lr-spec-grid">
+        {rows.map((row) => (
+          <div key={row.parameter} className="lr-spec-row">
+            <span className="lr-spec-label">
+              {row.parameter === "Noise floor" ? "Brusgolv" : row.parameter}
+            </span>
+            <span className="lr-spec-target">{row.requirement}</span>
+            <span className="lr-spec-measured">{row.after}</span>
+            <span
+              className={`lr-spec-badge${
+                row.status === "pass" ? " is-ok" : " is-fail"
+              }`}
+            >
+              {statusLabelSv(row.status)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function LocalRunPanel() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const healthPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const jobStartRef = useRef<number | null>(null);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [specs, setSpecs] = useState<SpecsMap>({});
+  const [specKey, setSpecKey] = useState("");
+  const [reportLocale, setReportLocale] = useState<ReportLocale>("sv");
+  const [mode, setMode] = useState<Mode>("standard");
+  const [mic, setMic] = useState<MicType>("unknown");
+  const [phase, setPhase] = useState<JobPhase>("idle");
+  const [statusText, setStatusText] = useState("");
+  const [jobLog, setJobLog] = useState("");
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [serverError, setServerError] = useState("");
+  const [specsError, setSpecsError] = useState("");
+  /** Elapsed seconds for the current/last job; null until a job starts. */
+  const [elapsedSec, setElapsedSec] = useState<number | null>(null);
+
+  const [runnerStatus, setRunnerStatus] = useState<RunnerStatus>("checking");
+  const [health, setHealth] = useState<HealthInfo | null>(null);
+  const [runnerForceDown, setRunnerForceDown] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+
+  const [beforeResult, setBeforeResult] = useState<AnalysisResult | null>(null);
+  const [afterResult, setAfterResult] = useState<AnalysisResult | null>(null);
+  const [beforeNoiseFloorDb, setBeforeNoiseFloorDb] = useState<number | null>(
+    null,
+  );
+  const [noiseFloorDb, setNoiseFloorDb] = useState<number | null>(null);
+  const [analysisError, setAnalysisError] = useState("");
+
+  const [workMode, setWorkMode] = useState<WorkMode>("single");
+  const [jobFolders, setJobFolders] = useState<JobFolder[]>([]);
+  const [jobFoldersError, setJobFoldersError] = useState("");
+  const [selectedJob, setSelectedJob] = useState("");
+  const [preflightFiles, setPreflightFiles] = useState<PreflightFile[]>([]);
+  const [preflightError, setPreflightError] = useState("");
+  const [micsByFile, setMicsByFile] = useState<Record<string, TalkMic | "">>({});
+  const [mtOutDir, setMtOutDir] = useState("");
+
+  const markRunnerDown = useCallback(() => {
+    setRunnerForceDown(true);
+    setRunnerStatus("down");
+    setHealth(null);
+  }, []);
+
+  const pollHealth = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/health`);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const data = (await res.json()) as HealthInfo;
+      setHealth(data);
+      setRunnerStatus("up");
+      setRunnerForceDown(false);
+    } catch {
+      setHealth(null);
+      setRunnerStatus("down");
+    }
+  }, []);
+
+  useEffect(() => {
+    void pollHealth();
+    healthPollRef.current = setInterval(() => void pollHealth(), HEALTH_POLL_MS);
+    return () => {
+      if (healthPollRef.current) clearInterval(healthPollRef.current);
+    };
+  }, [pollHealth]);
+
+  const loadJobFolders = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/multitrack/jobs`);
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        jobs?: JobFolder[];
+      };
+      if (!res.ok || data.ok === false) {
+        setJobFolders([]);
+        setJobFoldersError(data.error || "Kunde inte lista jobbmappar.");
+        return;
+      }
+      const jobs = data.jobs || [];
+      setJobFolders(jobs);
+      setJobFoldersError("");
+      setSelectedJob((prev) =>
+        prev && jobs.some((job) => job.name === prev) ? prev : "",
+      );
+    } catch (e) {
+      setJobFolders([]);
+      setJobFoldersError(
+        e instanceof Error ? e.message : "Kunde inte lista jobbmappar.",
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (workMode !== "multi") return;
+    void loadJobFolders();
+  }, [workMode, loadJobFolders]);
+
+  const restartRunner = async () => {
+    setRestarting(true);
+    try {
+      await fetch(`${API}/restart`, { method: "POST" });
+      await new Promise((r) => setTimeout(r, 3000));
+      await pollHealth();
+    } catch {
+      markRunnerDown();
+    } finally {
+      setRestarting(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetch(`${API}/specs`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        return res.json() as Promise<SpecsMap>;
+      })
+      .then((data) => {
+        setSpecs(data);
+        const keys = Object.keys(data);
+        if (keys.length) setSpecKey(keys[0]);
+      })
+      .catch((e) => {
+        setSpecsError(
+          e instanceof Error
+            ? `Kunde inte hämta specs: ${e.message}. Kör runner.py på Mac Mini och SSH-forward port 8766.`
+            : "Kunde inte hämta specs.",
+        );
+      });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const busy = phase === "uploading" || phase === "running" || phase === "analyzing";
+
+  // Upward process timer: ticks while uploading/running/analyzing, freezes on done/error.
+  useEffect(() => {
+    if (!busy) return;
+    const tick = () => {
+      if (jobStartRef.current != null) {
+        setElapsedSec(Math.floor((Date.now() - jobStartRef.current) / 1000));
+      }
+    };
+    const id = setInterval(tick, 250);
+    return () => {
+      clearInterval(id);
+      tick();
+    };
+  }, [busy]);
+
+  const resetResults = () => {
+    setBeforeResult(null);
+    setAfterResult(null);
+    setBeforeNoiseFloorDb(null);
+    setNoiseFloorDb(null);
+    setAnalysisError("");
+    setJobLog("");
+    setServerError("");
+    setJobId(null);
+  };
+
+  const onFile = (f: File) => {
+    resetResults();
+    jobStartRef.current = null;
+    setElapsedSec(null);
+    setFile(f);
+    setPhase("idle");
+    setStatusText("");
+  };
+
+  const pollJob = useCallback((id: string) => {
+      if (pollRef.current) clearInterval(pollRef.current);
+
+      pollRef.current = setInterval(() => {
+        void (async () => {
+          try {
+            const res = await fetch(`${API}/job/${id}`);
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            const data = (await res.json()) as { status: string; log: string };
+
+            setJobLog(data.log);
+            setStatusText(data.status === "running" ? "Kedjan kör…" : data.status);
+
+            if (data.status === "running") return;
+
+            if (pollRef.current) {
+              clearInterval(pollRef.current);
+              pollRef.current = null;
+            }
+
+            if (data.status === "error") {
+              setPhase("error");
+              setServerError(data.log || "Kedjan misslyckades.");
+              return;
+            }
+
+            setPhase("analyzing");
+            setStatusText("Hämtar och analyserar ljud…");
+
+            // En fil i taget, med hämtning direkt före analysen.
+            // Avkodat ljud ligger okomprimerat i minnet (~1,4 GB per timme
+            // stereo). Att hämta och analysera before och after parallellt
+            // höll fyra kopior samtidigt och slog i flikens minnestak på
+            // långa filer: "Array buffer allocation failed".
+            const fetchAudioBytes = async (
+              which: "before" | "after",
+            ): Promise<ArrayBuffer> => {
+              const res = await fetch(`${API}/audio/${id}/${which}`);
+              if (!res.ok) {
+                throw new Error(`Kunde inte hämta ${which} från servern.`);
+              }
+              // Straight to bytes: no Blob and no File wrapper, so the payload
+              // exists once instead of three times. After.wav is uncompressed
+              // and is by far the heaviest thing this page touches.
+              return res.arrayBuffer();
+            };
+
+            const beforeAnalysis = await analyzeWithNoiseFloor(
+              await fetchAudioBytes("before"),
+              (s) => setStatusText(`Before — ${s}`),
+            );
+
+            const afterAnalysis = await analyzeWithNoiseFloor(
+              await fetchAudioBytes("after"),
+              (s) => setStatusText(`After — ${s}`),
+            );
+
+            setBeforeResult(beforeAnalysis.result);
+            setAfterResult(afterAnalysis.result);
+            setBeforeNoiseFloorDb(beforeAnalysis.noiseFloorDb);
+            setNoiseFloorDb(afterAnalysis.noiseFloorDb);
+            setPhase("done");
+            setStatusText("");
+          } catch (e) {
+            if (pollRef.current) {
+              clearInterval(pollRef.current);
+              pollRef.current = null;
+            }
+            if (isNetworkFetchError(e)) {
+              markRunnerDown();
+            }
+            setPhase("error");
+            setServerError(
+              isNetworkFetchError(e)
+                ? "Jobbpolling misslyckades — runner nås inte eller tunnel bruten (Failed to fetch)."
+                : e instanceof Error
+                  ? e.message
+                  : decodeAnalysisError(e),
+            );
+          }
+        })();
+      }, 2000);
+  }, [markRunnerDown]);
+
+  const runChain = async () => {
+    if (!file || !specKey) return;
+    resetResults();
+    jobStartRef.current = Date.now();
+    setElapsedSec(0);
+    setPhase("uploading");
+    setStatusText("Laddar upp…");
+
+    const params = new URLSearchParams({
+      spec: specKey,
+      mic,
+      mode,
+      filename: file.name,
+    });
+
+    try {
+      const res = await fetch(`${API}/run?${params}`, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `${res.status} ${res.statusText}`);
+      }
+      const { id } = (await res.json()) as { id: string };
+      setJobId(id);
+      setPhase("running");
+      setStatusText("Kedjan kör…");
+      pollJob(id);
+    } catch (e) {
+      if (isNetworkFetchError(e)) {
+        markRunnerDown();
+      }
+      setPhase("error");
+      setServerError(
+        isNetworkFetchError(e)
+          ? "Uppladdning misslyckades — runner nås inte (Failed to fetch)."
+          : e instanceof Error
+            ? e.message
+            : "Uppladdning misslyckades.",
+      );
+    }
+  };
+
+  const pollMultitrack = useCallback((id: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(() => {
+      void (async () => {
+        try {
+          const res = await fetch(`${API}/multitrack/job/${id}`);
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+          const data = (await res.json()) as {
+            status: string;
+            phase: string;
+            error?: string;
+            out_dir?: string;
+          };
+          setStatusText(data.phase || data.status);
+          setJobLog(data.phase || "");
+          if (data.out_dir) setMtOutDir(data.out_dir);
+          if (data.status === "running") return;
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          if (data.status === "error") {
+            setPhase("error");
+            setServerError(data.error || data.phase || "Multitrack misslyckades.");
+            return;
+          }
+          setPhase("done");
+          setStatusText("Klar");
+        } catch (e) {
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          if (isNetworkFetchError(e)) markRunnerDown();
+          setPhase("error");
+          setServerError(
+            isNetworkFetchError(e)
+              ? "Jobbpolling misslyckades — runner nås inte (Failed to fetch)."
+              : e instanceof Error
+                ? e.message
+                : "Kunde inte läsa jobbstatus.",
+          );
+        }
+      })();
+    }, 2000);
+  }, [markRunnerDown]);
+
+  const runPreflight = async () => {
+    if (!selectedJob) return;
+    setPreflightError("");
+    setServerError("");
+    setMtOutDir("");
+    setPhase("running");
+    setStatusText("Kontrollerar");
+    try {
+      const res = await fetch(`${API}/multitrack/preflight`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder: selectedJob }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        files?: PreflightFile[];
+      };
+      const files = data.files || [];
+      setPreflightFiles(files);
+      const nextMics: Record<string, TalkMic | ""> = {};
+      for (const row of files) {
+        if (!row.room) nextMics[row.filename] = micsByFile[row.filename] || "";
+      }
+      setMicsByFile(nextMics);
+      if (!res.ok || data.ok === false) {
+        setPreflightError(data.error || "Förhandskontrollen misslyckades.");
+        setPhase("error");
+        setStatusText("Fel");
+        return;
+      }
+      setPhase("idle");
+      setStatusText("");
+    } catch (e) {
+      if (isNetworkFetchError(e)) markRunnerDown();
+      setPhase("error");
+      setStatusText("Fel");
+      setPreflightError(
+        e instanceof Error ? e.message : "Förhandskontrollen misslyckades.",
+      );
+    }
+  };
+
+  const runMultitrack = async () => {
+    if (!selectedJob || !specKey) return;
+    const mics: Record<string, TalkMic> = {};
+    for (const row of preflightFiles) {
+      if (row.room) continue;
+      const chosen = micsByFile[row.filename];
+      if (!chosen) {
+        setServerError(`Välj mikrofontyp för ${row.filename}.`);
+        setPhase("error");
+        setStatusText("Fel");
+        return;
+      }
+      mics[row.filename] = chosen;
+    }
+    resetResults();
+    setMtOutDir("");
+    jobStartRef.current = Date.now();
+    setElapsedSec(0);
+    setPhase("running");
+    setStatusText(`Bearbetar spår 1 av ${preflightFiles.length}`);
+    try {
+      const res = await fetch(`${API}/multitrack/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          folder: selectedJob,
+          spec: specKey,
+          mode,
+          mics,
+        }),
+      });
+      const data = (await res.json()) as {
+        id?: string;
+        error?: string;
+        out_dir?: string;
+      };
+      if (!res.ok || !data.id) {
+        throw new Error(data.error || "Kunde inte starta multitrack.");
+      }
+      setJobId(data.id);
+      if (data.out_dir) setMtOutDir(data.out_dir);
+      pollMultitrack(data.id);
+    } catch (e) {
+      if (isNetworkFetchError(e)) markRunnerDown();
+      setPhase("error");
+      setStatusText("Fel");
+      setServerError(
+        e instanceof Error ? e.message : "Kunde inte starta multitrack.",
+      );
+    }
+  };
+
+  const selectedSpec = specKey ? specs[specKey] : null;
+  const talkTracks = preflightFiles.filter((row) => !row.room);
+  const allMicsChosen = talkTracks.every((row) => Boolean(micsByFile[row.filename]));
+  const runnerDown = runnerForceDown || runnerStatus === "down";
+  const versionStale =
+    runnerStatus === "up" &&
+    health != null &&
+    health.version !== EXPECTED_RUNNER_VERSION;
+  const statusBarAlert = runnerDown || versionStale;
+
+  return (
+    <div className="aba lr">
+      <style>{ABA_CSS + LOCAL_RUN_CSS}</style>
+
+      <header className="aba-head">
+        <p className="aba-eyebrow">Saltwaves · lokal driftpanel</p>
+        <h1 className="aba-title">Local Run</h1>
+        <p className="aba-sub">
+          Internt verktyg — körs enbart på localhost. Dra in en råfil, kör
+          PodMaster-kedjan på Mac Mini via SSH-forward, analysera before/after
+          i browsern med samma motor som A/B Analyzer.
+        </p>
+      </header>
+
+      <div
+        className={`lr-statusbar${statusBarAlert ? " is-alert" : ""}`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="lr-status-item">
+          <span
+            className={`lr-dot${
+              runnerDown
+                ? " is-down"
+                : runnerStatus === "up"
+                  ? " is-up"
+                  : " is-checking"
+            }`}
+            title={
+              health
+                ? `v${health.version} · pid ${health.pid} · startad ${formatStarted(health.started)}`
+                : undefined
+            }
+          />
+          <span className="lr-status-name">Runner</span>
+          <span className="lr-status-meta">
+            {runnerDown ? (
+              <span className="lr-status-warn">
+                Runner nere eller tunnel bruten
+              </span>
+            ) : runnerStatus === "up" && health ? (
+              <>
+                OK · v{health.version} · startad{" "}
+                {formatStarted(health.started)}
+              </>
+            ) : (
+              "Kontrollerar…"
+            )}
+            <button
+              type="button"
+              className={`lr-status-btn${statusBarAlert ? "" : " is-ghost"}`}
+              disabled={restarting}
+              onClick={() => void restartRunner()}
+            >
+              {restarting ? "Startar om…" : "Starta om runner"}
+            </button>
+            {runnerDown && (
+              <span className="lr-status-hint">
+                Om omstart inte hjälper: kontrollera SSH-tunneln (ssh -L
+                8766:127.0.0.1:8766 mac-mini)
+              </span>
+            )}
+          </span>
+        </div>
+
+        <div className="lr-status-item">
+          <span
+            className={`lr-dot${
+              versionStale ? " is-stale" : runnerStatus === "up" ? " is-up" : " is-checking"
+            }`}
+          />
+          <span className="lr-status-name">Version</span>
+          <span className="lr-status-meta">
+            {versionStale ? (
+              <span className="lr-status-warn">
+                Runnern kör gammal kod — starta om
+                {health
+                  ? ` (körs: ${health.version}, förväntas: ${EXPECTED_RUNNER_VERSION})`
+                  : ""}
+              </span>
+            ) : runnerStatus === "up" && health ? (
+              `${health.version} ✓`
+            ) : (
+              "–"
+            )}
+          </span>
+        </div>
+
+        <div className="lr-status-item">
+          <span
+            className={`lr-dot${
+              specsError ? " is-down" : Object.keys(specs).length ? " is-up" : " is-checking"
+            }`}
+          />
+          <span className="lr-status-name">Specs</span>
+          <span className="lr-status-meta">
+            {specsError
+              ? specsError
+              : Object.keys(specs).length
+                ? `${Object.keys(specs).length} målspecar laddade`
+                : "Hämtar specs…"}
+          </span>
+        </div>
+      </div>
+
+      <div className="lr-mode-switch" role="tablist" aria-label="Körläge">
+        <button
+          type="button"
+          role="tab"
+          className={`lr-mode-btn${workMode === "single" ? " is-on" : ""}`}
+          aria-selected={workMode === "single"}
+          disabled={busy}
+          onClick={() => setWorkMode("single")}
+        >
+          En fil
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={`lr-mode-btn${workMode === "multi" ? " is-on" : ""}`}
+          aria-selected={workMode === "multi"}
+          disabled={busy}
+          onClick={() => setWorkMode("multi")}
+        >
+          Multitrack
+        </button>
+      </div>
+
+      {workMode === "single" && (
+      <div
+        className={`aba-drop lr-drop${file ? " is-done" : ""}`}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const f = e.dataTransfer.files?.[0];
+          if (f) onFile(f);
+        }}
+        onClick={() => inputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="audio/*,.wav,.mp3,.m4a,.flac,.aac,.ogg"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onFile(f);
+            e.target.value = "";
+          }}
+        />
+        <span className="aba-drop-tag">Råfil</span>
+        <span className="aba-drop-name">
+          {file ? file.name : "Dra in råfilen"}
+        </span>
+      </div>
+      )}
+
+      {workMode === "multi" && (
+        <label className="lr-path">
+          <span className="lr-label">Jobb</span>
+          <select
+            className="lr-select"
+            value={selectedJob}
+            disabled={busy || !jobFolders.length}
+            onChange={(e) => {
+              setSelectedJob(e.target.value);
+              setPreflightFiles([]);
+              setPreflightError("");
+            }}
+          >
+            <option value="">
+              {jobFoldersError
+                ? "Kunde inte lista mappar"
+                : jobFolders.length
+                  ? "Välj jobb"
+                  : "Inga jobbmappar"}
+            </option>
+            {jobFolders.map((job) => (
+              <option key={job.name} value={job.name}>
+                {job.name} ({job.wav_count} wav)
+              </option>
+            ))}
+          </select>
+          {jobFoldersError && (
+            <span className="lr-room-note">{jobFoldersError}</span>
+          )}
+        </label>
+      )}
+
+      <div className="lr-controls">
+        <label className="lr-field">
+          <span className="lr-label">Målspec</span>
+          <select
+            className="lr-select"
+            value={specKey}
+            onChange={(e) => setSpecKey(e.target.value)}
+            disabled={busy || !Object.keys(specs).length}
+          >
+            {Object.entries(specs).map(([key, s]) => (
+              <option key={key} value={key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {workMode === "single" && (
+        <label className="lr-field">
+          <span className="lr-label">Rapportspråk</span>
+          <select
+            className="lr-select"
+            value={reportLocale}
+            onChange={(e) => setReportLocale(e.target.value as ReportLocale)}
+          >
+            {REPORT_LOCALES.map((lang) => (
+              <option key={lang.value} value={lang.value}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        )}
+
+        <label className="lr-field">
+          <span className="lr-label">Lågsnitt</span>
+          <select
+            className="lr-select"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as Mode)}
+            disabled={busy}
+          >
+            {MODES.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {workMode === "single" && (
+        <label className="lr-field">
+          <span className="lr-label">Mikrofontyp</span>
+          <select
+            className="lr-select"
+            value={mic}
+            onChange={(e) => setMic(e.target.value as MicType)}
+            disabled={busy}
+          >
+            {MICS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        )}
+
+        {workMode === "single" ? (
+        <button
+          type="button"
+          className="lr-run"
+          disabled={!file || busy || !specKey}
+          onClick={() => void runChain()}
+        >
+          Kör kedjan
+        </button>
+        ) : (
+        <button
+          type="button"
+          className="lr-run"
+          disabled={!selectedJob || busy}
+          onClick={() => void runPreflight()}
+        >
+          Kontrollera
+        </button>
+        )}
+      </div>
+
+      {workMode === "multi" && preflightFiles.length > 0 && (
+        <div className="lr-table-wrap">
+          <table className="lr-table">
+            <thead>
+              <tr>
+                <th>Fil</th>
+                <th>Längd</th>
+                <th>SR</th>
+                <th>Ch</th>
+                <th>LUFS</th>
+                <th>TP</th>
+                <th>Mikrofon</th>
+              </tr>
+            </thead>
+            <tbody>
+              {preflightFiles.map((row) => (
+                <tr key={row.filename}>
+                  <td>
+                    {row.filename}
+                    {row.room ? " · rum" : ""}
+                  </td>
+                  <td>{fmtMeasure(row.duration, 2)} s</td>
+                  <td>{row.sample_rate}</td>
+                  <td>{row.channels}</td>
+                  <td>{fmtMeasure(row.integrated_lufs)}</td>
+                  <td>{fmtMeasure(row.true_peak)}</td>
+                  <td>
+                    {row.room ? (
+                      <span className="lr-room-note">Ingen NR / inget HP</span>
+                    ) : (
+                      <select
+                        className="lr-select"
+                        value={micsByFile[row.filename] || ""}
+                        disabled={busy}
+                        onChange={(e) =>
+                          setMicsByFile((prev) => ({
+                            ...prev,
+                            [row.filename]: e.target.value as TalkMic | "",
+                          }))
+                        }
+                      >
+                        <option value="">Välj mikrofon</option>
+                        {TALK_MICS.map((m) => (
+                          <option key={m.value} value={m.value}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            type="button"
+            className="lr-run"
+            disabled={busy || !specKey || !allMicsChosen || Boolean(preflightError)}
+            onClick={() => void runMultitrack()}
+          >
+            Kör multitrack
+          </button>
+        </div>
+      )}
+
+      {workMode === "multi" && preflightError && (
+        <div className="aba-remote-error" role="alert">
+          <p className="aba-remote-error-title">Fel</p>
+          <pre className="lr-log">{preflightError}</pre>
+        </div>
+      )}
+
+      {(statusText || jobLog || elapsedSec != null) && (
+        <div className="lr-status" role="status" aria-live="polite">
+          {elapsedSec != null && (
+            <p className="lr-elapsed" aria-label={`Förfluten tid ${formatElapsed(elapsedSec)}`}>
+              <span className="lr-elapsed-label">Tid</span>{" "}
+              <span className="lr-elapsed-value">{formatElapsed(elapsedSec)}</span>
+            </p>
+          )}
+          {statusText && phase !== "done" && (
+            <p className="lr-status-line">{statusText}</p>
+          )}
+          {workMode === "single" && jobLog && phase !== "done" && (
+            <pre className="lr-log">{jobLog}</pre>
+          )}
+        </div>
+      )}
+
+      {phase === "error" && (serverError || analysisError) && (
+        <div className="aba-remote-error" role="alert">
+          <p className="aba-remote-error-title">Fel</p>
+          <pre className="lr-log">{serverError || analysisError}</pre>
+        </div>
+      )}
+
+      {workMode === "single" && (beforeResult || afterResult) && (
+        <AbAnalysisResults
+          a={beforeResult}
+          b={afterResult}
+          label={file?.name ?? null}
+        />
+      )}
+
+      {workMode === "single" && phase === "done" &&
+        selectedSpec &&
+        beforeResult &&
+        afterResult &&
+        noiseFloorDb != null && (
+        <SpecCompliance
+          spec={selectedSpec}
+          before={beforeResult}
+          after={afterResult}
+          beforeNoiseFloorDb={beforeNoiseFloorDb}
+          noiseFloorDb={noiseFloorDb}
+        />
+      )}
+
+      {workMode === "single" && phase === "done" && jobId && (
+        <div className="lr-download">
+          <a
+            className="lr-run lr-download-btn"
+            href={`${API}/download/${jobId}`}
+            download
+          >
+            Ladda ner master
+          </a>
+          <button
+            type="button"
+            className="lr-run lr-download-btn lr-download-secondary"
+            disabled={
+              !selectedSpec ||
+              !beforeResult ||
+              !afterResult ||
+              noiseFloorDb == null ||
+              !file
+            }
+            onClick={() => {
+              if (
+                !selectedSpec ||
+                !beforeResult ||
+                !afterResult ||
+                noiseFloorDb == null ||
+                !file
+              ) {
+                return;
+              }
+              const rows = evaluateSpecRows(
+                selectedSpec,
+                beforeResult,
+                afterResult,
+                beforeNoiseFloorDb,
+                noiseFloorDb,
+                reportLocale,
+              );
+              const html = buildDeliveryReportHtml({
+                filename: file.name,
+                dateLabel: reportDateLabel(reportLocale),
+                specLabel: selectedSpec.label,
+                rows,
+                locale: reportLocale,
+              });
+              downloadBlob(
+                deliveryReportBasename(file.name, reportLocale),
+                html,
+              );
+            }}
+          >
+            Ladda ner rapport
+          </button>
+        </div>
+      )}
+
+      {workMode === "multi" && phase === "done" && (
+        <div className="lr-status" role="status">
+          <p className="lr-status-line">Klar</p>
+          {mtOutDir && <pre className="lr-log">Utdata: {mtOutDir}</pre>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const LOCAL_RUN_CSS = `
+.lr-statusbar{
+  max-width:920px;margin:0 auto 20px;display:grid;gap:10px;
+  border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  background:rgba(255,255,255,.5);
+}
+.lr-statusbar.is-alert{border-color:#f5c2c0;background:#fff5f5}
+.lr-status-item{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;font-size:13px}
+.lr-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:4px}
+.lr-dot.is-up{background:#34c759}
+.lr-dot.is-down{background:#ff3b30}
+.lr-dot.is-stale{background:#ffb020}
+.lr-dot.is-checking{background:#8a8a8a}
+.lr-status-name{
+  font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  min-width:56px;
+}
+.lr-status-meta{flex:1;color:var(--ink-60);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lr-status-warn{color:#b3261e;font-weight:600}
+.lr-status-hint{font-size:12px;color:var(--ink-60);flex-basis:100%}
+.lr-status-btn{
+  border:1px solid var(--line);border-radius:8px;padding:4px 10px;
+  background:var(--ink);color:var(--paper);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+}
+.lr-status-btn.is-ghost{
+  background:transparent;color:var(--ink-60);border-color:var(--line);
+  font-weight:500;
+}
+.lr-status-btn.is-ghost:hover:not(:disabled){
+  color:var(--ink);border-color:var(--ink);
+}
+.lr-status-btn:disabled{opacity:.5;cursor:not-allowed}
+.lr .lr-drop{max-width:920px;margin:0 auto 24px}
+.lr-controls{
+  max-width:920px;margin:0 auto 28px;display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));align-items:end;
+}
+.lr-field{display:flex;flex-direction:column;gap:6px}
+.lr-label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.lr-select{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  background:rgba(255,255,255,.55);font-size:14px;font-family:inherit;
+}
+.lr-run{
+  border:none;border-radius:10px;padding:12px 18px;
+  background:var(--ink);color:var(--paper);font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+}
+.lr-run:disabled{opacity:.45;cursor:not-allowed}
+.lr-status,.lr-spec,.lr-download,.lr-path,.lr-table-wrap,.lr-mode-switch{max-width:920px;margin:0 auto 28px}
+.lr-mode-switch{display:flex;gap:8px}
+.lr-mode-btn{
+  border:1px solid var(--line);border-radius:10px;padding:8px 14px;
+  background:rgba(255,255,255,.55);font-size:14px;cursor:pointer;font-family:inherit;
+}
+.lr-mode-btn.is-on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lr-path{display:flex;flex-direction:column;gap:6px}
+.lr-input{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  background:rgba(255,255,255,.55);font-size:14px;font-family:inherit;
+}
+.lr-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.lr-table th,.lr-table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.lr-room-note{font-size:12px;color:var(--ink-60)}
+.lr-download{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.lr-download-btn{display:inline-block;text-decoration:none;text-align:center}
+.lr-download-secondary{
+  background:transparent;color:var(--ink);border:1px solid var(--line);
+}
+.lr-download-secondary:hover:not(:disabled){border-color:var(--ink)}
+.lr-status-line{margin:0 0 8px;font-size:14px;color:var(--ink-60)}
+.lr-elapsed{
+  margin:0 0 8px;font-size:14px;font-variant-numeric:tabular-nums;
+  display:flex;align-items:baseline;gap:8px;
+}
+.lr-elapsed-label{
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-60);
+}
+.lr-elapsed-value{font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.lr-log{
+  margin:0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.45);font-size:12px;line-height:1.5;
+  white-space:pre-wrap;word-break:break-word;max-height:280px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.lr-spec-grid{display:grid;gap:10px}
+.lr-spec-row{
+  display:grid;grid-template-columns:80px 1fr 1fr auto;gap:12px;align-items:center;
+  border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  background:rgba(255,255,255,.5);font-size:14px;font-variant-numeric:tabular-nums;
+}
+.lr-spec-label{font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.lr-spec-target{color:var(--ink-60)}
+.lr-spec-badge{
+  font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:99px;
+}
+.lr-spec-badge.is-ok{background:#e6f4ea;color:#1e6b3a}
+.lr-spec-badge.is-fail{background:#fdecea;color:#b3261e}
+@media (max-width:640px){
+  .lr-spec-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
+  .lr-spec-label{grid-column:1/-1}
+}
+`;
+
+// Shared with Audiobook: identical measurements and report layout.
+export { analyzeWithNoiseFloor, evaluateSpecRows, buildDeliveryReportHtml, deliveryReportBasename, downloadBlob };

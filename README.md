@@ -1,55 +1,36 @@
-# Saltwaves Site
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Marketing site for Saltwaves Studio, built with Next.js 14 (App Router), TypeScript, and Tailwind CSS.
+## Getting Started
 
-## Project Structure
-
-- `app/page.tsx` - landing page (hero + manifesto + signup form)
-- `app/blog/page.tsx` - empty blog list page
-- `app/blog/[slug]/page.tsx` - empty single post page
-- `content/blog/` - MDX content directory
-- `public/robots.txt` - static robots rules
-- `public/sitemap.xml` - static sitemap
-
-## Run Locally
+First, run the development server:
 
 ```bash
-npm install
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Useful scripts:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```bash
-npm run lint
-npm run build
-npm run tina:build:local
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Tina CMS (Blog Editor)
+## Learn More
 
-- The visual editor is available at `http://localhost:3000/admin` when running `npm run dev`.
-- Tina is configured for the existing MDX blog content in `content/blog/`.
-- Existing frontmatter fields are preserved: `title`, `description`, `date`.
-- Blog rendering in `app/blog/` continues to read directly from MDX files.
+To learn more about Next.js, take a look at the following resources:
 
-### Vercel Setup For `/admin`
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Set these environment variables in Vercel so Tina can use the hosted API in production:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- `NEXT_PUBLIC_TINA_CLIENT_ID`
-- `TINA_TOKEN`
-- `GITHUB_BRANCH` (or rely on `VERCEL_GIT_COMMIT_REF`)
+## Deploy on Vercel
 
-If credentials are not set, `npm run build` falls back to a local Tina build mode.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## Deploy to Vercel
-
-1. Push this repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com/new).
-3. Keep defaults (Framework Preset: Next.js).
-4. Click **Deploy**.
-
-For custom domain, add `saltwaves.studio` in Vercel project settings.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

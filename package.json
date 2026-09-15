@@ -1,36 +1,39 @@
 {
-  "name": "saltwaves-site",
+  "name": "saltwaves-frontend-app",
   "version": "0.1.0",
   "private": true,
+  "browserslist": [
+    "defaults"
+  ],
   "scripts": {
-    "dev": "tinacms dev -c \"next dev\"",
-    "build": "npm run tina:build && next build",
+    "dev": "next dev",
+    "build": "npm run build:legacy-css && next build",
     "start": "next start",
-    "lint": "next lint",
-    "dev:next": "next dev",
-    "tina:build": "if [ -n \"$NEXT_PUBLIC_TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi",
-    "tina:build:local": "tinacms build --local --skip-cloud-checks"
+    "lint": "eslint",
+    "build:legacy-css": "tailwindcss -c tailwind.legacy.cjs -i scripts/legacy-css.input.css -o \"app/(public-tools)/legacy.css\" --minify"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.0",
-    "@tinacms/cli": "^2.2.3",
+    "@auth/supabase-adapter": "1.11.3",
+    "@supabase/supabase-js": "^2.108.2",
     "gray-matter": "^4.0.3",
-    "mammoth": "^1.12.0",
-    "next": "14.2.33",
+    "jose": "^6.2.8",
+    "mammoth": "^1.12.3",
+    "next": "16.3.5",
+    "next-auth": "5.0.0-beta.32",
     "next-mdx-remote": "^6.0.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-markdown": "^10.1.0",
-    "tinacms": "^3.7.3"
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "server-only": "^0.0.1",
+    "stripe": "^22.2.1",
+    "tus-js-client": "^4.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.33",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "tailwindcss": "^3.4.19",
     "typescript": "^5"
   }
 }

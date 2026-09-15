@@ -1,0 +1,30 @@
+@tailwind utilities;
+#legacy-public { --font-archivo: Arial Black, sans-serif; --font-inter: Arial, sans-serif; --font-geist-sans: Arial, sans-serif; --font-space: Arial, sans-serif; font-family: Arial, sans-serif; line-height: 1.5; }
+#legacy-public *, #legacy-public ::before, #legacy-public ::after { border-width: 0; border-style: solid; border-color: currentColor; }
+#legacy-public .blog-content {
+  color: rgba(241, 237, 232, 0.9);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+#legacy-public .blog-content > * + * {
+  margin-top: 1rem;
+}
+
+#legacy-public .blog-content h2,
+#legacy-public .blog-content h3 {
+  color: #f1ede8;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-top: 2.2rem;
+}
+
+#legacy-public .blog-excerpt {
+  color: #ff6200;
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+#legacy-public button, #legacy-public input, #legacy-public textarea, #legacy-public select { font-family: inherit; font-size: 100%; line-height: inherit; color: inherit; background-color: transparent; }
