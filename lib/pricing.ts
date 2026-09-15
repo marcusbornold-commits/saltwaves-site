@@ -34,7 +34,7 @@ export const PRICING_TIERS: PricingTier[] = [
     badge: "No credit card required",
     items: [
       "Full quality, no watermark",
-      "3 episodes a month",
+      "2 hours of processing a month",
       "Email delivery",
       "No account needed",
     ],
@@ -48,7 +48,7 @@ export const PRICING_TIERS: PricingTier[] = [
     annualPrice: "$190",
     badge: "Most popular",
     featured: true,
-    items: ["Unlimited episodes", "Priority processing"],
+    items: ["10 hours of processing per month", "Priority processing"],
     cta: "Get Creator",
   },
   {
@@ -57,6 +57,7 @@ export const PRICING_TIERS: PricingTier[] = [
     monthlyPrice: "$39",
     annualPrice: "$390",
     items: [
+      "30 hours of processing per month",
       "Everything in Creator",
       { label: "Batch processing", soon: true },
     ],
