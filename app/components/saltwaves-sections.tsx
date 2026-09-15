@@ -390,7 +390,7 @@ export function Pricing({
           </div>
         </div>
         <a href="/founding" className="founding-pricing-banner reveal">
-          Founding — lifetime access to Creator, limited to 20 seats
+          Founding — $129 for your first year of Creator, then $190/year. Limited to 20 seats
         </a>
         <div className="pricing-grid">
           {tiers.map((t, i) => (

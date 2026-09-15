@@ -39,8 +39,18 @@ export async function reconcileFoundingSlots(): Promise<void> {
 }
 
 export async function createFoundingCheckout(ownerId: string, customerId: string, priceId: string): Promise<string> {
-  // Only the fixed $129 price is offered. Keep old price recognition for existing purchases/webhooks.
+  // The legacy Founding ID selects this offer; the actual line item is Creator annual.
   if (priceId !== process.env.STRIPE_PRICE_FOUNDING_T1) throw new FoundingUnavailable("unavailable");
+  const stripe = getStripe();
+  const annualPriceId = process.env.STRIPE_PRICE_CREATOR_YEARLY;
+  if (!annualPriceId) throw new FoundingUnavailable("unavailable");
+  const annualPrice = await stripe.prices.retrieve(annualPriceId);
+  const coupon = await stripe.coupons.retrieve("founding-first-year-129-v1");
+  if (!annualPrice.active || annualPrice.currency !== "usd" || annualPrice.unit_amount !== 19000 ||
+      annualPrice.recurring?.interval !== "year" || annualPrice.recurring.interval_count !== 1 ||
+      !coupon.valid || coupon.duration !== "once" || coupon.amount_off !== 6100 || coupon.currency !== "usd") {
+    throw new FoundingUnavailable("unavailable");
+  }
   await reconcileFoundingSlots();
   const db = getSupabaseAdmin();
   const { data, error } = await db.rpc("reserve_founding_slot", { p_owner: ownerId, p_customer: customerId });
@@ -50,25 +60,29 @@ export async function createFoundingCheckout(ownerId: string, customerId: string
   if (slot.state === "sold") throw new FoundingUnavailable("already_member");
   if (slot.session_id) {
     const session = await getStripe().checkout.sessions.retrieve(slot.session_id);
-    if (session.status === "open" && session.url) return session.url;
+    if (session.status === "open" && session.mode === "subscription" &&
+        session.metadata?.founding_offer === "first_year_129_v1" && session.url) return session.url;
+    // Do not resume a checkout with the superseded lifetime terms.
     throw new FoundingUnavailable("unavailable");
   }
   // Persisted expiry + owner/customer + idempotency key make concurrent retries the same checkout.
   // An ambiguous Stripe error leaves the reservation held, avoiding overselling.
   const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
+    mode: "subscription",
     customer: slot.customer_id,
     customer_update: { address: "auto", name: "auto" },
     client_reference_id: slot.owner_id,
-    metadata: { user_id: slot.owner_id, price_id: priceId, founding_reservation: slot.reservation_id },
-    line_items: [{ price: priceId, quantity: 1 }],
-    invoice_creation: { enabled: true },
+    metadata: { user_id: slot.owner_id, price_id: annualPriceId, founding_reservation: slot.reservation_id, founding_offer: "first_year_129_v1" },
+    line_items: [{ price: annualPriceId, quantity: 1 }],
+    discounts: [{ coupon: coupon.id }],
+    subscription_data: { metadata: { user_id: slot.owner_id, founding_offer: "first_year_129_v1" } },
+    custom_text: { submit: { message: "$129 for the first year, then $190 per year unless cancelled. Applicable taxes are calculated at checkout." } },
     automatic_tax: { enabled: true },
     billing_address_collection: "required",
     expires_at: slot.checkout_expires_at,
     success_url: "https://saltwaves.studio/account?checkout=success&founding=1",
     cancel_url: "https://saltwaves.studio/founding?checkout=cancel",
-  }, { idempotencyKey: `founding-slot-${slot.reservation_id}` });
+  }, { idempotencyKey: `founding-year1-${slot.reservation_id}` });
   const { error: updateError } = await db.from("founding_slots").update({ session_id: session.id })
     .eq("slot", slot.slot).eq("reservation_id", slot.reservation_id).eq("state", "held");
   if (updateError || !session.url) throw new FoundingUnavailable("unavailable");

@@ -6,9 +6,9 @@ import "./founding.css";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/founding" },
-  title: "Founding — Lifetime Creator Access | Saltwaves",
+  title: "Founding — First-Year Creator Discount | Saltwaves",
   description:
-    "Lock in lifetime Creator access with a one-time payment. Limited to 20 founding members.",
+    "Get Creator for $129 for your first year, then $190 per year. Limited to 20 founding members.",
 };
 
 type FoundingPageProps = {
@@ -18,7 +18,7 @@ type FoundingPageProps = {
 };
 
 const FOUNDING_FEATURES = [
-  "Lifetime Creator plan",
+  "Creator plan — first-year discount",
   "10 hours of processing per month",
   "Priority processing",
   "Founding member badge",
@@ -32,7 +32,7 @@ export default async function FoundingPage({ searchParams }: FoundingPageProps) 
   try { ({ sold, available } = await getFoundingStatus()); } catch {
     return <main className="founding-page"><div className="founding-shell">
       <h1 className="founding-title">Founding</h1>
-      <p>20 places total, $129 once for lifetime Creator access. Checkout is temporarily unavailable while availability is verified.</p>
+      <p>20 places total. Creator is $129 for the first year, then $190 per year. Checkout is temporarily unavailable while availability is verified.</p>
       <a href="/pricing">View monthly and annual plans</a>
     </div></main>;
   }
@@ -46,9 +46,9 @@ export default async function FoundingPage({ searchParams }: FoundingPageProps) 
         )}
 
         <div className="founding-kicker">Founding membership</div>
-        <h1 className="founding-title">Lock in lifetime Creator access.</h1>
+        <h1 className="founding-title">Your first year of Creator for $129.</h1>
         <p className="founding-sub">
-          One payment of $129. Only 20 Founding memberships will be sold. Once all 20 are claimed, this offer closes.
+          Pay $129 for your first year, then renew at the regular Creator price of $190 per year. Only 20 Founding memberships will be sold. Once all 20 are claimed, this offer closes.
         </p>
 
         <article className={`founding-card${tierInfo.soldOut ? " sold-out" : ""}`}>
@@ -78,7 +78,7 @@ export default async function FoundingPage({ searchParams }: FoundingPageProps) 
           )}
 
           <p className="founding-tos">
-            Lifetime applies to the Creator tier as defined today. Does not cover
+            The discount applies to the first year only. Your subscription then renews at $190 per year unless cancelled. Does not cover
             standalone future products. The RSS portal is not included.
           </p>
         </article>

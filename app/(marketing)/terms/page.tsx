@@ -12,7 +12,7 @@ export default function TermsOfServicePage() {
   return (
     <article className={styles.page}>
       <h1>Terms of Service</h1>
-      <p className={styles.updated}>Last updated: 27 July 2026</p>
+      <p className={styles.updated}>Last updated: 15 September 2026</p>
 
       <h2>The service</h2>
       <p>Automated post-processing of recorded speech.</p>
@@ -26,9 +26,9 @@ export default function TermsOfServicePage() {
       <h2>Paid tiers</h2>
       <p>Creator and Studio, billed monthly or annually.</p>
 
-      <h2>Founding lifetime</h2>
+      <h2>Founding membership</h2>
       <p>
-        Grants access to the Creator tier as defined at the time of purchase,
+        New Founding memberships cost $129 for the first year, then renew at the regular Creator price of $190 per year unless cancelled. The discount applies only to the first year. Includes access to the Creator tier,
         with 10 hours of processing per month. It does not cover standalone
         future products, and does not cover the RSS portal, which is a
         separate paid feature.
@@ -62,7 +62,7 @@ export default function TermsOfServicePage() {
 
       <h2>Changes</h2>
       <p>
-        Changes to these terms are published on this page. A Founding lifetime
+        Changes to these terms are published on this page. A Founding membership
         purchase already made is not affected by later changes to the definition
         of the Creator tier.
       </p>

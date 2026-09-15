@@ -249,7 +249,7 @@ export default function LoudnessInspector() {
               rel="noopener noreferrer"
               className="mt-1.5 block text-xs text-[#f1ede8]/35 underline-offset-2 hover:underline"
             >
-              20 lifetime Creator spots. Then it’s yearly.
+              20 Founding spots. $129 for the first year, then $190/year.
             </a>
           </div>
 

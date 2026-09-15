@@ -50,7 +50,7 @@ export default function FoundingCheckoutButton({
     <>
       <p className="founding-spot">{spotLabel}</p>
       <div className="founding-price">
-        {priceDisplay} <small>one-time</small>
+        {priceDisplay} <small>first year</small>
       </div>
       <button
         type="button"
