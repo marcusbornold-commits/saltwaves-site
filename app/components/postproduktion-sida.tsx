@@ -33,8 +33,8 @@ const RAPPORT = [
     fore: "−18,7 dBTP",
     efter: "−2,9 dBTP",
     krav: "≤ −3,0",
-    utfall: "OK",
-    ok: true,
+    utfall: "Över taket",
+    ok: false,
   },
   {
     parameter: "Brusgolv",
@@ -216,10 +216,11 @@ export default function PostproduktionSida() {
             </div>
           </div>
           <p className="demo-caption reveal">
-            Brusgolvet gick från {EXEMPEL.brusgolvFore} till {EXEMPEL.brusgolvEfter}, trots ett
-            lyft på nästan 24 decibel. Utan bearbetning hade det landat elva decibel utanför
-            spec. Det är den delen som inte gör sig själv. Loudness och true peak gäller det
-            45 sekunder långa utsnittet. Brusgolvet är mätt på hela filen.
+            Loudness ökade från −38,6 till −18,0 LUFS, en skillnad på 20,6 LU.
+            De publicerade MP3-utdragen är ommätta den 15 september 2026. Efterfilens
+            true peak är −2,9 dBTP och ligger därmed över det angivna taket på −3,0 dBTP.
+            Detta lyssningsexempel är inte en godkänd leveransfil. Brusgolv och signal mot brus
+            är tidigare rapportvärden för hela filen, inte nya mätningar av utdraget.
           </p>
 
           <div className="reveal" style={{ marginTop: 32, maxWidth: 720 }}>

@@ -111,7 +111,7 @@ export function DemoCard({
 }: DemoCardProps) {
   const mastered = kind === "mastered";
   const resolvedTitle = title ?? (mastered ? "After — PodMaster" : "Before — raw recording");
-  const resolvedMicro = microcopy ?? (mastered ? "one pass, 60 seconds" : "straight off the mic");
+  const resolvedMicro = microcopy ?? (mastered ? "after mastering" : "straight off the mic");
   const resolvedTags =
     tags ??
     (mastered
@@ -190,7 +190,7 @@ export function DemoSection() {
     <section className="band band-dark" id="demo" data-screen-label="Before/After demo">
       <div className="container">
         <div className="reveal">
-          <div className="kicker">Same file. 60 seconds apart.</div>
+          <div className="kicker">Same recording. Before and after.</div>
           <h2 className="section-title">Hear the difference.</h2>
           <p className="section-sub">No upload required — just press play.</p>
         </div>
@@ -233,7 +233,7 @@ function StepIcon({ kind }: any) {
 
 export function HowItWorks() {
   const steps = [
-    { icon: "upload", title: "Upload", body: "Drop your episode export — .wav or .mp3, any length." },
+    { icon: "upload", title: "Upload", body: "Upload WAV, MP3 or M4A. File size and duration limits depend on your plan — see the FAQ." },
     { icon: "process", title: "Processing", body: "Noise reduction, EQ balance, loudness to broadcast spec." },
     { icon: "download", title: "Download", body: "Broadcast-ready audio in your inbox." },
   ];

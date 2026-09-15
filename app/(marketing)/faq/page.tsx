@@ -9,7 +9,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What file types do you support?",
-    a: "WAV, MP3, and M4A. Free tier: up to 200 MB and 60 minutes per episode, 2 hours of processing per month. Creator and Founding: up to 1 GB and 180 minutes per episode, 10 hours per month. Studio: up to 1 GB and 300 minutes per episode, 30 hours per month.",
+    a: "WAV, MP3, and M4A. Free tier: up to 200 MB and 60 minutes per episode, 2 hours of processing per month. Creator and Founding: up to 1000 MB and 180 minutes per episode, 10 hours per month. Studio: up to 1000 MB and 300 minutes per episode, 30 hours per month.",
   },
   {
     q: "Which mic type should I pick?",
@@ -17,7 +17,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How long are my files kept?",
-    a: "Every plan: your original upload is deleted after processing. Paid uploads use temporary private storage with automatic cleanup every 15 minutes. Mastered files stay available to download for 48 hours, then we remove them. Download and keep your copy.",
+    a: "Downloads are available for 48 hours after processing completes. Temporary working copies are removed after processing. Original uploads, previews and masters are removed by scheduled cleanup; physical deletion may occur later than link expiry, including when cleanup is retried after a failure. Download and keep your own copy.",
   },
   {
     q: "Refunds and cancellation",

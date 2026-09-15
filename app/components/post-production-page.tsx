@@ -237,8 +237,8 @@ export default function PostProductionPage() {
             </h2>
             <p className="microcopy" style={{ maxWidth: "68ch", lineHeight: 1.65, margin: 0 }}>
               Sole proprietorship registered in Sweden, F-tax certified. Processing runs on our own
-              hardware inside the EU — nothing is sent to third-party services. Uploaded material is
-              deleted after processing; delivered files within 48 hours. A Data Processing Agreement
+              hardware inside the EU. File transfer, retention and deletion arrangements are confirmed
+              with you before each project. A Data Processing Agreement
               under GDPR Article 28 is available on request.
             </p>
           </div>

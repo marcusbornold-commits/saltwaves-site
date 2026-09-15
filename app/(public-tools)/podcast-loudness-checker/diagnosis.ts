@@ -81,16 +81,16 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
   }
   const delta = r.integratedLufs - p.target;
   const loudOk = Math.abs(delta) <= p.tolerance;
-  const peakOk = r.truePeakDb <= p.ceiling + 0.5;
+  const peakOk = r.truePeakDb <= p.ceiling;
 
   if (loudOk && peakOk) {
     return {
       pass: true,
-      headline: "Ready to publish.",
+      headline: "Within the selected level targets.",
       detail:
         `Integrated loudness sits within ${p.tolerance.toFixed(0)} LU of the ` +
-        `target and true peaks stay under the ceiling. Nothing here needs ` +
-        `fixing before you publish.`,
+        `target and true peaks do not exceed the ceiling. This is a level check, ` +
+        `not a full delivery-specification or listening check.`,
     };
   }
 
@@ -125,8 +125,8 @@ export function verdictFor(r: AnalysisResult, p: Platform): Verdict {
         : `Too quiet by ${Math.abs(delta).toFixed(1)} LU.`,
     detail:
       delta > 0
-        ? `The platform will turn this down on playback. Whatever compression ` +
-          `got you here stays audible; the loudness it bought you does not.`
+        ? `This exceeds the selected loudness target. Reduce the output level ` +
+          `and listen for distortion or excessive compression before exporting again.`
         : `Listeners will reach for the volume, and everything under your ` +
           `voice comes up with it — room tone, breaths, preamp hiss.`,
   };
@@ -166,17 +166,17 @@ export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
     });
   }
 
-  if (overPeak > 0.5) {
+  if (overPeak > 0) {
     out.push({
       id: "truepeak",
       title: `True peak is ${overPeak.toFixed(1)} dB over the ceiling`,
       body:
         `Your file measures ${r.truePeakDb.toFixed(1)} dBTP. Sample peak meters ` +
         `do not show this — the extra level appears between samples, when the ` +
-        `player reconstructs the waveform. It becomes real, audible distortion ` +
-        `after the platform encodes to AAC or MP3, so it can sound clean on ` +
-        `your machine and crackle on a phone.`,
-      fix: `Set your limiter to true peak mode with a ceiling at ${p.ceiling.toFixed(1)} dBTP or lower, then re-export. Do not simply turn the file down — that leaves the clipping in place.`,
+        `player reconstructs the waveform. It can cause distortion ` +
+        `in some later conversions or encodings. Check the exported format ` +
+        `and listen for clipping as well as measuring it.`,
+      fix: `Set your limiter to true peak mode with a ceiling at ${p.ceiling.toFixed(1)} dBTP or lower, then re-export. Reducing gain can fix an excessive level; it cannot repair distortion already present in the source.`,
       weight: 100,
     });
   }
@@ -186,10 +186,9 @@ export function buildDiagnoses(r: AnalysisResult, p: Platform): Diagnosis[] {
       id: "hot",
       title: `Running ${delta.toFixed(1)} LU hot for ${p.label}`,
       body:
-        `${p.label} normalizes playback toward ${p.target} LUFS, so this ` +
-        `episode gets turned down on the way to the listener. The compression ` +
-        `and limiting used to reach this level stay in the audio; only the ` +
-        `loudness disappears. You paid for it twice and kept neither half.`,
+        `The selected ${p.label} reference is ${p.target} LUFS. This file exceeds ` +
+        `that target. Playback normalization varies by destination; use the ` +
+        `delivery specification and listen for excessive compression.`,
       fix: `Back off the output stage by ${delta.toFixed(1)} dB rather than compressing less mid-chain, then re-check. Aim for the target, not above it.`,
       weight: 80,
     });

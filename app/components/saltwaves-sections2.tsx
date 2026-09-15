@@ -55,7 +55,7 @@ export function ToolsSuite() {
         </div>
         <div className="tools-grid">
           <div className="reveal reveal-d1" style={{ gridColumn: "1 / -1", display: "grid" }}>
-            <ToolCard flagship name="PodMaster" href="/podmaster" desc="Broadcast-grade podcast mastering. Drop an episode, get broadcast-ready audio back in about a minute." tag="flagship · free tier" />
+            <ToolCard flagship name="PodMaster" href="/podmaster" desc="Podcast mastering. Upload an episode and get the finished master by email. Processing time depends on episode length and the queue." tag="flagship · free tier" />
           </div>
           <div className="reveal reveal-d1" style={{ display: "grid" }}>
             <ToolCard
@@ -81,12 +81,12 @@ export function ToolsSuite() {
 
 /* ---------- FAQ ---------- */
 const FAQ_ITEMS = [
-  { q: "Do you store my audio files?", a: "We process, deliver, and delete. Uploads go away after processing; mastered files within 48 hours — all plans, pre-v2." },
+  { q: "Do you store my audio files?", a: "Downloads are available for 48 hours after processing completes. Temporary working copies are removed after processing. Original uploads, previews and masters are removed by scheduled cleanup; physical deletion may occur later than link expiry, including when cleanup is retried after a failure. Download and keep your own copy." },
   { q: "What file formats are supported?", a: ".wav, .mp3, and .m4a, up to 200 MB on the free tier." },
   { q: "How is this different from Auphonic?", a: "Auphonic runs generic loudness algorithms. PodMaster is trained on real studio sessions curated by a broadcast engineer with 20 years behind the console — it makes the same calls a human would." },
   { q: "Can I use it for music?", a: "PodMaster is built for spoken word — that's the entire point. Episodes with music beds and intros work, but the chain is tuned for voice, not for mastering music releases. If your show is music-heavy, tell us — it helps us prioritize." },
-  { q: "How long does processing take?", a: "Typically a few minutes per episode. You upload, we process, and the finished file lands in your inbox — no need to keep the tab open." },
-  { q: "Where is my audio processed?", a: "Processing runs on our own hardware inside the EU. Paid uploads are temporarily stored in private Supabase Storage in Frankfurt before processing; Free uploads go directly to our hardware. Original uploads are deleted after processing, and mastered files within 48 hours." },
+  { q: "How long does processing take?", a: "Processing time depends on episode length and the queue. We email you when your file is ready — no need to keep the tab open." },
+  { q: "Where is my audio processed?", a: "Processing runs on our own hardware inside the EU. Paid uploads are temporarily stored in private Supabase Storage in Frankfurt before processing; Free uploads go directly to our hardware. Downloads expire after 48 hours. Uploads, previews and masters are removed by scheduled cleanup; see our Privacy Policy for details." },
   { q: "What do I need to do before uploading?", a: "Nothing. Upload your raw recording — no pre-processing, no noise reduction, no EQ. The chain works best on untouched audio." },
   { q: "Do you support multiple speakers?", a: "The chain processes one file end to end, with one set of decisions. It's built for a consistent source — a solo host, a narrator, a single mic in a single room. Interviews recorded to one track will process, but two voices with different mics or different rooms are better handled as separate files." },
   { q: "Who is this built by?", a: "Marcus Bornold — 20 years in live sound, broadcast and TV production." },

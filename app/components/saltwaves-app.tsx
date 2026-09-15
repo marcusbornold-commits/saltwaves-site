@@ -11,13 +11,13 @@ import { ToolsSuite, FAQ, FinalCTA } from "./saltwaves-sections2";
 
 const TWEAK_DEFAULTS: any = {
   "hero": "Wave",
-  "headline": "60 seconds",
+  "headline": "Mastering",
   "motion": true,
   "currency": "Auto"
 };
 
 const HEADLINES: any = {
-  "60 seconds": "Master your podcast in 60 seconds.",
+  "Mastering": "Your podcast. Ready to be heard.",
   "No studio": "Studio sound. No studio.",
 };
 const SUBLINE =
@@ -60,7 +60,7 @@ export default function App({ isLoggedIn, priceIds, access, showSuite = true }: 
     };
   }, [t.hero]);
 
-  const headline = HEADLINES[t.headline] || HEADLINES["60 seconds"];
+  const headline = HEADLINES[t.headline] || HEADLINES["Mastering"];
 
   return (
     <React.Fragment>

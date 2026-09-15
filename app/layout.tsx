@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://saltwaves.studio"),
   title: "PodMaster by Saltwaves.studio – Broadcast-Grade Podcast Mastering",
   description:
-    "Master your podcast in 60 seconds. PodMaster cleans noise, balances EQ and matches loudness to broadcast spec — a processing chain built on 20 years behind the console. Free, no account needed.",
+    "Upload your podcast and get a mastered file by email. PodMaster cleans noise, balances EQ and matches loudness to broadcast spec — a processing chain built on 20 years behind the console. Free, no account needed.",
   keywords:
     "podcast mastering, broadcast podcast mastering, podcast loudness, noise reduction, audio mastering online",
   openGraph: {

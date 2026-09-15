@@ -8,52 +8,25 @@ export const metadata: Metadata = {
   alternates: { canonical: "/podcast-loudness-checker" },
   title: "Podcast Loudness Checker — Free LUFS & True Peak Analysis | Saltwaves",
   description:
-    "Check your podcast's loudness against Apple, Spotify and YouTube specs. Built on 20 years of broadcast audio judgment — diagnosis, not just numbers. Free, runs in your browser.",
+    "Measure integrated loudness and true peak against selected podcast and broadcast targets. Free audio analysis in your browser; not a complete delivery compliance check.",
 };
 
 const platformTargets = [
-  {
-    platform: "Apple Podcasts",
-    loudness: "−16 LUFS",
-    truePeak: "−1 dBTP",
-  },
-  {
-    platform: "Spotify",
-    loudness: "−14 LUFS",
-    truePeak: "−1 dBTP (−2 dBTP if loud)",
-  },
-  {
-    platform: "YouTube",
-    loudness: "−14 LUFS",
-    truePeak: "−1 dBTP",
-  },
-  {
-    platform: "Audiobook (ACX / Audible)",
-    loudness: "−23 to −18 LUFS",
-    truePeak: "−3 dBTP",
-  },
-  {
-    platform: "Broadcast EU (EBU R128)",
-    loudness: "−23 LUFS",
-    truePeak: "−1 dBTP",
-  },
-  {
-    platform: "Broadcast TV (ATSC A/85)",
-    loudness: "−24 LKFS",
-    truePeak: "−2 dBTP",
-  },
+  { platform: "Apple Podcasts recommendation", loudness: "−16 LKFS ±1", truePeak: "≤ −1 dBTP" },
+  { platform: "Spotify music — Normal playback setting", loudness: "−14 LUFS", truePeak: "Delivery advice: below −1 dBTP; below −2 if louder than −14 LUFS" },
+  { platform: "ACX audiobook submission", loudness: "−23 to −18 dB RMS (not LUFS)", truePeak: "Peak level ≤ −3 dBFS (ACX peak requirement)" },
 ];
 
 const faqItems = [
   {
     question: "What LUFS should my podcast be?",
     answer:
-      "−16 LUFS integrated for stereo spoken word, with true peaks no higher than −1 dBTP. This satisfies Apple's guideline directly, and Spotify and YouTube normalize it cleanly toward their −14 targets.",
+      "For a stereo podcast, −16 LUFS integrated with true peaks no higher than −1 dBTP is a useful reference aligned with Apple's recommendation. Check your destination's delivery requirements; playback behaviour varies by platform and settings.",
   },
   {
     question: "Is −14 LUFS too loud for a podcast?",
     answer:
-      "For music, no. For speech, usually — holding speech at −14 LUFS requires compression that most voices don't wear well. −16 LUFS is the spoken-word standard for a reason.",
+      "−14 LUFS is louder than Apple's recommended −16 ±1 range. It is not automatically distorted or unsuitable for every destination. Choose the delivery target first and avoid unnecessary compression just to reach a number.",
   },
   {
     question: "What is true peak and why does it matter?",
@@ -120,7 +93,7 @@ export default function PodcastLoudnessCheckerPage() {
                     Loudness target
                   </th>
                   <th className="border border-[#f1ede8]/15 px-4 py-3 font-semibold uppercase tracking-[0.08em]">
-                    True peak ceiling
+                    Peak limit / guidance
                   </th>
                 </tr>
               </thead>
@@ -145,107 +118,50 @@ export default function PodcastLoudnessCheckerPage() {
             LUFS and LKFS are the same measurement (ITU-R BS.1770) under two names.
           </p>
           <p className="mt-2 text-sm text-[#f1ede8]/60">
-            Sources: Apple Podcasts audio requirements, Spotify loudness
-            normalization, YouTube loudness normalization, EBU R128, ATSC A/85,
-            and ACX submission requirements. Checked August 2026.
+            RMS is a different measurement. The Audiobook catalogue preset
+            uses a LUFS target and does not certify ACX compliance. ACX also has
+            requirements for noise, encoding and other aspects of the file.
+            Sources checked 15 September 2026: {" "}
+            <a href="https://podcasters.apple.com/support/893-audio-requirements">Apple Podcasts</a>, {" "}
+            <a href="https://support.spotify.com/us/artists/article/loudness-normalization/">Spotify music normalization</a>, {" "}
+            <a href="https://help.acx.com/s/article/what-are-the-acx-audio-submission-requirements">ACX submission requirements</a>.
           </p>
         </div>
       </section>
 
       <section className="px-6 pb-20 sm:px-10 lg:px-20">
         <div className="blog-content mx-auto max-w-3xl">
-          <h2>Why podcast loudness matters more than you think</h2>
+          <h2>Choose a delivery target before adjusting levels</h2>
           <p>
-            Every major platform measures the loudness of your episode and normalizes
-            playback toward its own target. If your episode comes in hot, it gets
-            turned down — and any limiting you used to get there stays baked in as
-            distortion, now without the loudness payoff. If it comes in low, listeners
-            reach for the volume knob, and everything you didn&apos;t want them to hear —
-            room tone, breaths, preamp hiss — comes up with your voice.
+            Integrated loudness describes the overall programme level. True peak
+            estimates peaks in the reconstructed waveform, including peaks between
+            samples. Measure both, then listen for uneven speakers, distortion and
+            distracting noise. Passing two measurements does not guarantee that a
+            recording sounds good or meets every requirement of a distributor.
+          </p>
+          <h2>A useful podcast reference</h2>
+          <p>
+            Apple recommends approximately −16 LKFS with a tolerance of ±1 dB and
+            true peaks no higher than −1 dBFS. LUFS and LKFS use the same loudness
+            scale. Our Podcast preset uses −16 LUFS and a −1 dBTP ceiling.
           </p>
           <p>
-            The result is the same in both directions: your episode sounds different
-            from the one that played before it, and different from the one that plays
-            after. Listeners don&apos;t diagnose that as a loudness problem. They just
-            register it as &quot;this show sounds off.&quot;
+            Spotify&apos;s −14 LUFS documentation describes music normalization and
+            includes exceptions for players and listening settings. It is not a
+            universal podcast submission requirement. Do not assume that every
+            platform will raise a quiet episode or turn down a loud one in the same way.
           </p>
-
-          <h2>Why −16 LUFS, not −14</h2>
+          <h2>Use the result as a level check</h2>
           <p>
-            Spotify and YouTube both normalize toward −14 LUFS, so −14 looks like the
-            obvious target. It isn&apos;t — and the reason is spoken word.
-          </p>
-          <p>
-            The widely cited Apple Podcasts guideline is −16 LUFS for stereo.
-            That&apos;s not Apple being conservative; it reflects how speech behaves. Music
-            at −14 LUFS is dense — the energy fills the spectrum continuously. Speech
-            at −14 LUFS has to be compressed noticeably harder to hold that level
-            through pauses and phrasing, and that&apos;s exactly when voices start sounding
-            pinched and fatiguing on earbuds.
+            Browser measurements help you compare files with the selected target.
+            Audiobook catalogue and broadcast presets are reference settings;
+            confirm the specification supplied by your distributor. An ACX submission
+            needs an RMS check and other checks this tool does not provide.
           </p>
           <p>
-            Master spoken word at −16 LUFS and every platform handles it gracefully:
-            Apple plays it as intended, and Spotify&apos;s normalization brings quieter
-            content up toward −14 on platforms that want it louder. You lose nothing
-            and keep the natural dynamics that make a voice pleasant for forty minutes,
-            not just forty seconds.
-          </p>
-
-          <h2>True peak: the −1 dBTP rule</h2>
-          <p>
-            Your DAW&apos;s peak meter reads the samples. Your listener&apos;s phone plays a
-            reconstructed waveform — and between two samples, that waveform can swing
-            higher than either of them. These inter-sample peaks are invisible on a
-            sample-peak meter and become real, audible clipping after the AAC or MP3
-            encode every platform applies.
-          </p>
-          <p>
-            That&apos;s why the spec is −1 dBTP (decibels True Peak), not −1 dBFS. A
-            limiter with true-peak detection set to −1.0 or lower leaves the codec
-            room to work. If your episode measures above −1 dBTP, it may sound clean
-            on your machine and crackle on your audience&apos;s.
-          </p>
-
-          <h2>Loudness range: dynamics are a delivery decision</h2>
-          <p>
-            Integrated LUFS tells you how loud the episode is overall. LRA (loudness
-            range) tells you how much it moves. For spoken word, roughly 5–11 LU is
-            the comfortable zone: enough movement that a voice sounds like a person,
-            not so much that a listener in a car keeps riding the volume.
-          </p>
-          <p>
-            Below that range, the audio has usually been compressed hard enough that
-            breaths and room pumping become part of the sound. Above it, the quiet
-            passages disappear under road noise and the loud ones startle. Neither
-            shows up on a level meter — both show up in whether people finish the
-            episode.
-          </p>
-
-          <h2>A number is not a diagnosis</h2>
-          <p>
-            Any free LUFS meter can tell you your episode is −12.3 LUFS. What it
-            can&apos;t tell you is what that means: that you&apos;re 3.7 LU hot for Apple,
-            that the platform will turn you down, that the limiting used to get there
-            is now pure cost, and what specifically to change in your chain before the
-            next episode.
-          </p>
-          <p>
-            That&apos;s the difference this tool is built around. The measurements follow
-            ITU-R BS.1770-4 — the same standard broadcast delivery is checked against —
-            and the interpretation comes from twenty years of mixing for broadcast,
-            where a delivery that misses spec gets sent back.
-          </p>
-          <p>
-            If you&apos;d rather not manage any of this per episode:{" "}
-            <Link
-              href="/"
-              className="text-[#ff6200] underline decoration-[#ff6200]/40 underline-offset-4 transition-opacity hover:opacity-75"
-            >
-              PodMaster
-            </Link>{" "}
-            is our mastering pipeline built on the same broadcast targets — it lands
-            every episode at spec, consistently, so the checker becomes a confirmation
-            instead of a to-do list.
+            <Link href="/podmaster" className="text-[#ff6200] underline">PodMaster</Link>{" "}
+            cleans and masters spoken-word recordings. Listen to the delivered file
+            and check its measurements against your destination before publication.
           </p>
           <p>
             For the full walkthrough of targets and how to hit them in your own chain,

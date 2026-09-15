@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
   return (
     <article className={styles.page}>
       <h1>Privacy Policy</h1>
-      <p className={styles.updated}>Last updated: 11 September 2026</p>
+      <p className={styles.updated}>Last updated: 15 September 2026</p>
 
       <h2>Controller</h2>
       <p>
@@ -23,8 +23,10 @@ export default function PrivacyPolicyPage() {
 
       <h2>What we collect</h2>
       <p>
-        Your email address, used to deliver the processed file, and the audio
-        file you upload.
+        We process your email address, uploaded audio, file and job details, and
+        delivery status to provide the mastering service. If you create an account,
+        we also process your account and sign-in details and subscription status.
+        Service providers may process technical connection and security logs.
       </p>
 
       <h2>Free tier</h2>
@@ -36,8 +38,13 @@ export default function PrivacyPolicyPage() {
 
       <h2>Retention</h2>
       <p>
-        Uploaded files are deleted after processing. Delivered files are deleted
-        within 48 hours. This applies to all tiers.
+        Download links expire 48 hours after processing completes. Working copies
+        are removed when processing finishes. Original uploads, original-audio
+        previews and mastered files are removed by scheduled cleanup. Link expiry
+        and physical deletion are separate: cleanup runs periodically and may be
+        delayed while a failed cleanup is retried. Paid cloud inputs are cleaned
+        up separately after their job finishes, fails or expires. Download and
+        keep your own copy; the service is not an audio archive.
       </p>
 
       <h2>Where processing happens</h2>
@@ -51,11 +58,29 @@ export default function PrivacyPolicyPage() {
 
       <h2>Paid accounts</h2>
       <p>
-        Account details are stored to provide the service. Payments are handled
-        by Stripe, acting as a data processor. Stripe may process data outside
-        the EU under Standard Contractual Clauses.
+        Account details are stored to provide the service. Stripe handles checkout,
+        billing and payment records under its own privacy terms and applicable
+        data-protection roles. Stripe may process data outside the EU. Its privacy
+        policy describes the safeguards used for international transfers.
       </p>
 
+      <h2>Sign-in and email providers</h2>
+      <p>
+        Google processes sign-in information when you choose Google sign-in.
+        Supabase stores account and job information. Resend handles sign-in and
+        delivery emails. If you submit an updates or spec-sheet form, your email
+        is passed to MailerLite for that requested communication. Payment and
+        account records have retention requirements separate from audio files.
+      </p>
+      <h2>Browser tools and previous analytics</h2>
+      <p>
+        Loudness Inspector processes audio in your browser. Its optional analytics
+        collection is paused. Earlier versions recorded tool events, audio-level
+        measurements, duration, selected targets and referrer information in
+        Supabase, and used a 30-day first-party cookie to attribute later usage.
+        Pausing collection does not itself delete previously stored events.
+        Contact us about access or deletion of personal data.
+      </p>
       <h2>Your rights under GDPR</h2>
       <p>
         Access, rectification, erasure, data portability, restriction and
@@ -67,8 +92,10 @@ export default function PrivacyPolicyPage() {
 
       <h2>Cookies</h2>
       <p>
-        We use only what is required to operate the service. No advertising or
-        cross-site tracking.
+        Sign-in uses cookies needed to operate your account. Loudness Inspector
+        no longer sets its optional first-touch analytics cookie or sends new
+        measurement events. Its updated code removes the old marker when invoked.
+        Any future optional analytics will need a separate choice before activation.
       </p>
 
       <h2>Data Processing Agreement</h2>
