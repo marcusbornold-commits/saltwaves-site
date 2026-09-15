@@ -499,6 +499,16 @@ export function Footer({ omitFounding = false, b2b = false }: { omitFounding?: b
                 </ul>
               </div>
             )}
+            {!b2b && <div className="footer-col">
+              <h4>Podcast workflows</h4>
+              <ul>
+                <li><a href="/podcast-mastering">Podcast mastering</a></li>
+                <li><a href="/auphonic-alternative">Auphonic alternative</a></li>
+                <li><a href="/adobe-podcast-alternative">Adobe Podcast alternative</a></li>
+                <li><a href="/podcast-audio-cleanup">Audio cleanup</a></li>
+                <li><a href="/podcast-mastering-api">Mastering API enquiries</a></li>
+              </ul>
+            </div>}
             <div className="footer-col">
               <h4>Company</h4>
               <ul>

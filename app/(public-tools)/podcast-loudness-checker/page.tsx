@@ -151,6 +151,11 @@ export default function PodcastLoudnessCheckerPage() {
             universal podcast submission requirement. Do not assume that every
             platform will raise a quiet episode or turn down a loud one in the same way.
           </p>
+          <h2>Need to change what you measured?</h2>
+          <p>
+            Explore <Link href="/podcast-mastering" className="text-[#ff6200] underline">podcast mastering</Link> for a finished spoken-word file,
+            or <Link href="/podcast-audio-cleanup" className="text-[#ff6200] underline">podcast audio cleanup</Link> if noise and room sound are the first problem to solve.
+          </p>
           <h2>Use the result as a level check</h2>
           <p>
             Browser measurements help you compare files with the selected target.
