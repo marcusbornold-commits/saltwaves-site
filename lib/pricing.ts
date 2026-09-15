@@ -44,7 +44,7 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     id: "creator",
     name: "Creator",
-    monthlyPrice: "$14",
+    monthlyPrice: "$19",
     annualPrice: "$190",
     badge: "Most popular",
     featured: true,
@@ -54,7 +54,7 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     id: "studio",
     name: "Studio",
-    monthlyPrice: "$29",
+    monthlyPrice: "$39",
     annualPrice: "$390",
     items: [
       "Everything in Creator",
