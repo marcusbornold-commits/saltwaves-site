@@ -27,9 +27,10 @@ type AppProps = {
   isLoggedIn: boolean;
   priceIds: PriceIds;
   access: AccessLevel;
+  showSuite?: boolean;
 };
 
-export default function App({ isLoggedIn, priceIds, access }: AppProps) {
+export default function App({ isLoggedIn, priceIds, access, showSuite = true }: AppProps) {
   const t = TWEAK_DEFAULTS;
 
   // Reveal-on-scroll (rect-based; no IntersectionObserver dependency)
@@ -70,7 +71,7 @@ export default function App({ isLoggedIn, priceIds, access }: AppProps) {
         {t.hero === "Console" && <HeroConsole headline={headline} subline={SUBLINE} access={access} />}
         <DemoSection />
         <HowItWorks />
-        <ToolsSuite />
+        {showSuite && <ToolsSuite />}
         <Credibility />
         <Pricing currency={t.currency} isLoggedIn={isLoggedIn} priceIds={priceIds} />
         <FAQ />

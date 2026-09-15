@@ -492,7 +492,7 @@ export function Footer({ omitFounding = false, b2b = false }: { omitFounding?: b
               <div className="footer-col">
                 <h4>Tools</h4>
                 <ul>
-                  <li><a href="/#try">PodMaster</a></li>
+                  <li><a href="/podmaster">PodMaster</a></li>
                   <li><a href="/blog">Blog</a></li>
                   <li><a href="https://saltwaves.studio/promptermaster">PrompterMaster</a></li>
                   <li><a href="https://saltwaves.studio/podcast-loudness-checker">Loudness Inspector</a></li>

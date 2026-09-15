@@ -55,7 +55,7 @@ export function ToolsSuite() {
         </div>
         <div className="tools-grid">
           <div className="reveal reveal-d1" style={{ gridColumn: "1 / -1", display: "grid" }}>
-            <ToolCard flagship name="PodMaster" desc="Broadcast-grade podcast mastering. Drop an episode, get broadcast-ready audio back in about a minute." tag="flagship · free tier" />
+            <ToolCard flagship name="PodMaster" href="/podmaster" desc="Broadcast-grade podcast mastering. Drop an episode, get broadcast-ready audio back in about a minute." tag="flagship · free tier" />
           </div>
           <div className="reveal reveal-d1" style={{ display: "grid" }}>
             <ToolCard
