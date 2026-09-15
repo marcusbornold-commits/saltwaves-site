@@ -27,3 +27,13 @@ The previous webhook still grants access; inventory state is reconciled from Str
 ## Validation boundary
 
 Build/type checking and local tests cover the frontend logic. Production database migration, legacy-session reconciliation and dual-domain rollout are required before the 20-place guarantee is live. Do not publish only the main-domain patch and claim the offer is globally capped.
+
+## Confirmed membership baseline
+
+Marcus explicitly confirmed that the two existing Supabase lifetime members
+are the Founding baseline and requested 18 places open for purchase. Use
+scripts/20260915_open_founding_from_members.sql for this one-time initialization.
+It refuses to run unless exactly two members exist, all 20 slots are empty,
+and the inventory is still closed. It preserves both memberships and enables
+admission atomically. The Stripe-import procedure above is superseded for this
+baseline by Marcus's explicit instruction.

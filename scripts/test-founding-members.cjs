@@ -1,0 +1,20 @@
+const {PGlite}=require('@electric-sql/pglite');
+const {readFileSync}=require('node:fs');
+const assert=require('node:assert/strict');
+(async()=>{
+ const db=new PGlite();
+ await db.exec('create role anon; create role authenticated; create role service_role; create table profiles(id uuid primary key,lifetime_creator boolean,stripe_customer_id text);');
+ await db.exec(readFileSync('scripts/20260915_founding_inventory.sql','utf8'));
+ const seed=readFileSync('scripts/20260915_open_founding_from_members.sql','utf8');
+ await assert.rejects(db.exec(seed),/exactly two/);await db.exec('rollback');
+ await db.exec("insert into profiles values ('00000000-0000-0000-0000-000000000001',true,'cus_existing'),('00000000-0000-0000-0000-000000000002',true,null)");
+ await db.exec(seed);
+ assert.equal((await db.query("select count(*)::int as n from founding_slots where state='sold'")).rows[0].n,2);
+ assert.equal((await db.query("select count(*)::int as n from founding_slots where state='available'")).rows[0].n,18);
+ assert.equal((await db.query('select initialized from founding_inventory')).rows[0].initialized,true);
+ await assert.rejects(db.exec(seed),/already enabled/);await db.exec('rollback');
+ const attempts=await Promise.all(Array.from({length:20},(_,i)=>db.query('select * from reserve_founding_slot($1,$2)',['buyer'+i,'cus_'+i])));
+ assert.equal(attempts.filter(r=>r.rows.length).length,18);
+ assert.equal((await db.query('select count(*)::int as n from profiles where lifetime_creator=true')).rows[0].n,2);
+ await db.close();console.log('PASS: two existing members imported, 18 available, repeat activation blocked, only 18 further reservations admitted, original memberships preserved.');
+})().catch(e=>{console.error(e);process.exitCode=1});
