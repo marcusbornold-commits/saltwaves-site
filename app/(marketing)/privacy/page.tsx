@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import styles from "../legal.module.css";
+import { TrafficPrivacyChoice } from "@/components/TrafficConsent";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
@@ -12,7 +13,7 @@ export default function PrivacyPolicyPage() {
   return (
     <article className={styles.page}>
       <h1>Privacy Policy</h1>
-      <p className={styles.updated}>Last updated: 15 September 2026</p>
+      <p className={styles.updated}>Last updated: 16 September 2026</p>
 
       <h2>Controller</h2>
       <p>
@@ -95,8 +96,14 @@ export default function PrivacyPolicyPage() {
         Sign-in uses cookies needed to operate your account. Loudness Inspector
         no longer sets its optional first-touch analytics cookie or sends new
         measurement events. Its updated code removes the old marker when invoked.
-        Any future optional analytics will need a separate choice before activation.
+        Optional Cloudflare Web Analytics measures visits and referral sources on
+        public pages only if you choose to allow it. It does not measure account,
+        upload or audio pages. Cloudflare receives page path, referrer, device and
+        performance information; URL query strings are not used. Your choice is
+        saved in this browser and can be changed below. Earlier visits cannot
+        be measured retroactively.
       </p>
+      <TrafficPrivacyChoice />
 
       <h2>Data Processing Agreement</h2>
       <p>

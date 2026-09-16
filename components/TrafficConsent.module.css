@@ -1,0 +1,30 @@
+.banner {
+  position: fixed;
+  z-index: 1000;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  color: #fff;
+  background: #20201e;
+  border: 1px solid #777;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px #0005;
+  font-size: .9rem;
+}
+.banner p { margin: 0 0 .8rem; line-height: 1.45; }
+.banner a { color: #fff; text-decoration: underline; }
+.actions, .preferences { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+.actions button, .preferences button {
+  padding: .55rem .8rem;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.actions button:last-child { background: #fff; color: #20201e; }
+.preferences { margin: 1rem 0; }
+.preferences p { flex-basis: 100%; margin: 0; }
