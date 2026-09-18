@@ -41,7 +41,7 @@ export default function LandingPage({ slug }: { slug: string }) {
           <p className={styles.intro}>{page.intro}</p>
           <div className={styles.actions}>
             <a className="btn btn-primary" href={ctaHref}>{ctaLabel} <span aria-hidden="true">→</span></a>
-            <Link className="btn btn-ghost" href={page.contact ? '/podmaster' : '/#demo'}>{page.contact ? 'Try the sound in PodMaster' : 'Hear before and after'}</Link>
+            <Link className="btn btn-ghost" href={page.contact ? '/podmaster' : '/podmaster-demo.html'}>{page.contact ? 'Try the sound in PodMaster' : 'Hear before and after'}</Link>
           </div>
           <p className={styles.fit}>{page.fit}</p>
         </div>
